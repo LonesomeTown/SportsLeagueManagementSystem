@@ -1,3 +1,5 @@
+server:
+  port: 8080
 spring:
   data:
     mongodb:
@@ -7,7 +9,13 @@ spring:
       username: admin
       password: admin
       authentication-database: admin
+  mustache:
+    check-template-location: false
 
 logging:
   level:
     org.springframework.data.mongodb.core: INFO
+
+vaadin:
+  whitelisted-packages: com.vaadin,org.vaadin,com.smu.databaseteamproject
+  launch-browser: true
