@@ -1,4 +1,4 @@
-package com.smu.databaseteamproject.constant;
+package com.smu.constant;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;

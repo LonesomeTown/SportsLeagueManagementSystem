@@ -1,9 +1,9 @@
-package com.smu.databaseteamproject.util;
+package com.smu.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.smu.databaseteamproject.constant.ObjectMapperFactory;
+import com.smu.constant.ObjectMapperFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

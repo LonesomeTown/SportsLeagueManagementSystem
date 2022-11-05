@@ -1,4 +1,4 @@
-package com.smu.databaseteamproject;
+package com.smu;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

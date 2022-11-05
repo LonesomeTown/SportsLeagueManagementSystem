@@ -1,4 +1,4 @@
-package com.smu.databaseteamproject.util;
+package com.smu.util;
 
 import org.apache.commons.lang3.StringUtils;
 
