@@ -27,6 +27,7 @@ public class LeagueView extends VerticalLayout {
         setSizeFull();
         configureGrid();
         configureForm();
+        closeEditor();
         add(getToolbar(), getContent());
     }
 
