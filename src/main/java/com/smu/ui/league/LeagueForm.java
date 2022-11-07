@@ -34,7 +34,7 @@ public class LeagueForm extends FormLayout {
     League league;
 
     public LeagueForm() {
-        addClassName("contact-form");
+        addClassName("league-form");
 
         name.setRequiredIndicatorVisible(true);
         name.setErrorMessage("This field is required");
@@ -52,10 +52,10 @@ public class LeagueForm extends FormLayout {
     }
 
     // Events
-    public abstract static class ContactFormEvent extends ComponentEvent<LeagueForm> {
+    public abstract static class LeagueFormEvent extends ComponentEvent<LeagueForm> {
         private final League league;
 
-        protected ContactFormEvent(LeagueForm source, League league) {
+        protected LeagueFormEvent(LeagueForm source, League league) {
             super(source, false);
             this.league = league;
         }
@@ -70,20 +70,20 @@ public class LeagueForm extends FormLayout {
         binder.readBean(league);
     }
 
-    public static class SaveEvent extends ContactFormEvent {
+    public static class SaveEvent extends LeagueFormEvent {
         SaveEvent(LeagueForm source, League league) {
             super(source, league);
         }
     }
 
-    public static class DeleteEvent extends ContactFormEvent {
+    public static class DeleteEvent extends LeagueFormEvent {
         DeleteEvent(LeagueForm source, League league) {
             super(source, league);
         }
 
     }
 
-    public static class CloseEvent extends ContactFormEvent {
+    public static class CloseEvent extends LeagueFormEvent {
         CloseEvent(LeagueForm source) {
             super(source, null);
         }

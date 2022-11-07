@@ -2,6 +2,7 @@ package com.smu.service.impl;
 
 import com.smu.dto.League;
 import com.smu.repository.LeagueRepository;
+import com.smu.repository.TeamRepository;
 import com.smu.service.LeagueService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -16,9 +17,11 @@ import java.util.List;
 @Service
 public class LeagueServiceImpl implements LeagueService {
     private final LeagueRepository leagueRepository;
+    private final TeamRepository teamRepository;
 
-    public LeagueServiceImpl(LeagueRepository leagueRepository) {
+    public LeagueServiceImpl(LeagueRepository leagueRepository, TeamRepository teamRepository) {
         this.leagueRepository = leagueRepository;
+        this.teamRepository = teamRepository;
     }
 
     @Override
