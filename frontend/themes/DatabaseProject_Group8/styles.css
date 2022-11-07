@@ -4,6 +4,10 @@
     .league-view.editing .league-grid {
         display: none;
     }
+    .team-view.editing .toolbar,
+    .team-view.editing .team-grid {
+        display: none;
+    }
 }
 a[highlight] {
     font-weight: bold;

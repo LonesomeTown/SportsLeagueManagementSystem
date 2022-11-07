@@ -4,6 +4,8 @@ import com.smu.dto.League;
 import com.smu.dto.Team;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.util.List;
+
 /**
  * TeamRepository
  *
@@ -11,4 +13,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  */
 public interface TeamRepository extends MongoRepository<Team, String> {
     Long countTeamByLeagueName(String leagueName);
+
+    List<Team> findTeamsByNameContains(String name);
 }

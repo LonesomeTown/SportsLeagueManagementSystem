@@ -3,6 +3,7 @@ package com.smu.service.impl;
 import com.smu.dto.Team;
 import com.smu.repository.TeamRepository;
 import com.smu.service.TeamService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,17 +23,21 @@ public class TeamServiceImpl implements TeamService {
 
     @Override
     public List<Team> findAllTeams(String teamName) {
-        return null;
+        if (StringUtils.isEmpty(teamName)) {
+            return teamRepository.findAll();
+        } else {
+            return teamRepository.findTeamsByNameContains(teamName);
+        }
     }
 
     @Override
     public void saveTeam(Team team) {
-
+        teamRepository.save(team);
     }
 
     @Override
     public void deleteTeam(Team team) {
-
+        teamRepository.delete(team);
     }
 
     @Override

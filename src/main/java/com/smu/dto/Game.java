@@ -3,6 +3,10 @@ package com.smu.dto;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.util.Date;
+
 /**
  * Game
  *
@@ -10,5 +14,17 @@ import lombok.experimental.Accessors;
  */
 @Data
 public class Game {
+    @NotEmpty
+    private String homeTeamName;
+    @NotEmpty
+    private String visitingTeamName;
+    @NotEmpty
+    private String location;
+    @NotNull
+    private Date gameDate;
+    @NotNull
+    private Float homeScore;
+    @NotNull
+    private Float visitingScore;
 
 }
