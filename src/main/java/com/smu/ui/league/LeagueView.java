@@ -1,9 +1,6 @@
 package com.smu.ui.league;
 
-import com.smu.dto.InitializeVo;
-import com.smu.dto.League;
-import com.smu.dto.Season;
-import com.smu.dto.Team;
+import com.smu.dto.*;
 import com.smu.service.LeagueService;
 import com.smu.service.SeasonService;
 import com.smu.service.TeamService;
@@ -17,11 +14,15 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import org.springframework.beans.BeanUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Route(value = "", layout = MainLayout.class)
 @PageTitle("League | Project Group8")
 public class LeagueView extends VerticalLayout {
-    Grid<League> grid = new Grid<>(League.class);
+    Grid<LeagueVo> grid = new Grid<>(LeagueVo.class);
     TextField filterText = new TextField();
     LeagueForm form;
     InitializeDialog dialog;
@@ -46,13 +47,18 @@ public class LeagueView extends VerticalLayout {
         grid.addClassNames("league-grid");
         grid.setSizeFull();
         grid.setColumns("name");
-        grid.addColumn(League::getCommissionerName).setHeader("Commissioner Name");
-        grid.addColumn(League::getCommissionerSsn).setHeader("Commissioner SSN");
+        grid.addColumn(LeagueVo::getCommissionerName).setHeader("Commissioner Name");
+        grid.addColumn(LeagueVo::getCommissionerSsn).setHeader("Commissioner SSN");
+        grid.addColumn(LeagueVo::getSeasonsNum).setHeader("Number of Seasons");
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
         this.updateList();
 
-        grid.asSingleSelect().addValueChangeListener(event ->
-                editLeague(event.getValue()));
+        grid.asSingleSelect().addValueChangeListener(event -> {
+                    League league = new League();
+                    BeanUtils.copyProperties(event.getValue(), league);
+                    editLeague(league);
+                }
+        );
     }
 
     private HorizontalLayout getToolbar() {
@@ -162,6 +168,15 @@ public class LeagueView extends VerticalLayout {
     }
 
     private void updateList() {
-        grid.setItems(leagueService.findAllLeagues(filterText.getValue()));
+        List<LeagueVo> leagueVos = new ArrayList<>();
+        List<League> allLeagues = leagueService.findAllLeagues(filterText.getValue());
+        for (League allLeague : allLeagues) {
+            LeagueVo leagueVo = new LeagueVo();
+            BeanUtils.copyProperties(allLeague, leagueVo);
+            //TODO
+            leagueVo.setSeasonsNum(0);
+            leagueVos.add(leagueVo);
+        }
+        grid.setItems(leagueVos);
     }
 }
