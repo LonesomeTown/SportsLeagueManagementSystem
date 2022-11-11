@@ -1,28 +1,24 @@
 package com.smu.dto;
 
 import lombok.Data;
-import lombok.experimental.Accessors;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 
 /**
- * Team
+ * LeagueVo
  *
- * @author T.W 11/3/22
+ * @author T.W 11/7/22
  */
 @Data
-public class Team implements Serializable {
+public class LeagueVo implements Serializable {
     private static final long serialVersionUID = 1905122041950251207L;
-    @MongoId
     @NotEmpty
     private String name;
     @NotEmpty
-    private String city;
+    private String commissionerName;
     @NotEmpty
-    private String field;
-    @NotEmpty
-    private String leagueName;
-    private Float rating;
+    private String commissionerSsn;
+    private Integer seasonsNum;
 }

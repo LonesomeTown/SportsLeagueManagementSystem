@@ -1,12 +1,13 @@
-package com.smu.ui.league;
+package com.smu.ui.team;
 
-import com.smu.dto.League;
+import com.smu.dto.Team;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -15,76 +16,84 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
 
+import java.util.List;
+
 /**
  * LeagueForm
  *
  * @author T.W 11/4/22
  */
-public class LeagueForm extends FormLayout {
-    TextField name = new TextField("League Name");
-    TextField commissionerName = new TextField("Commissioner name");
-    TextField commissionerSsn = new TextField("Commissioner SSN");
+public class TeamForm extends FormLayout {
+    TextField name = new TextField("Team Name");
+    TextField city = new TextField("City of Team");
+    TextField field = new TextField("Field of team");
+    ComboBox<String> leagueName = new ComboBox<>("League Name");
+
 
     Button save = new Button("Save");
     Button delete = new Button("Delete");
     Button close = new Button("Cancel");
 
-    Binder<League> binder = new BeanValidationBinder<>(League.class);
+    Binder<Team> binder = new BeanValidationBinder<>(Team.class);
 
-    League league;
+    Team team;
 
-    public LeagueForm() {
-        addClassName("league-form");
+    public TeamForm(List<String> leagues) {
+        addClassName("team-form");
 
         name.setRequiredIndicatorVisible(true);
         name.setErrorMessage("This field is required");
-        commissionerName.setRequiredIndicatorVisible(true);
-        commissionerName.setErrorMessage("This field is required");
-        commissionerSsn.setRequiredIndicatorVisible(true);
-        commissionerSsn.setErrorMessage("This field is required");
+        city.setRequiredIndicatorVisible(true);
+        city.setErrorMessage("This field is required");
+        field.setRequiredIndicatorVisible(true);
+        field.setErrorMessage("This field is required");
+        leagueName.setRequiredIndicatorVisible(true);
+        leagueName.setErrorMessage("This field is required");
+        leagueName.setItems(leagues);
 
         binder.bindInstanceFields(this);
 
         add(name,
-                commissionerName,
-                commissionerSsn,
+                city,
+                field,
+                leagueName,
                 createButtonsLayout());
     }
 
     // Events
-    public abstract static class LeagueFormEvent extends ComponentEvent<LeagueForm> {
-        private final League league;
+    public abstract static class TeamFormEvent extends ComponentEvent<TeamForm> {
+        private final Team team;
 
-        protected LeagueFormEvent(LeagueForm source, League league) {
+        protected TeamFormEvent(TeamForm source, Team team) {
             super(source, false);
-            this.league = league;
+            this.team = team;
         }
 
-        public League getLeague() {
-            return league;
-        }
-    }
-
-    public void setLeague(League league) {
-        this.league = league;
-        binder.readBean(league);
-    }
-
-    public static class SaveEvent extends LeagueFormEvent {
-        SaveEvent(LeagueForm source, League league) {
-            super(source, league);
+        public Team getTeam() {
+            return team;
         }
     }
 
-    public static class DeleteEvent extends LeagueFormEvent {
-        DeleteEvent(LeagueForm source, League league) {
-            super(source, league);
+    public void setTeam(Team team) {
+        this.team = team;
+        binder.readBean(team);
+    }
+
+    public static class SaveEvent extends TeamFormEvent {
+        SaveEvent(TeamForm source, Team team) {
+            super(source, team);
+        }
+    }
+
+    public static class DeleteEvent extends TeamFormEvent {
+        DeleteEvent(TeamForm source, Team team) {
+            super(source, team);
         }
 
     }
 
-    public static class CloseEvent extends LeagueFormEvent {
-        CloseEvent(LeagueForm source) {
+    public static class CloseEvent extends TeamFormEvent {
+        CloseEvent(TeamForm source) {
             super(source, null);
         }
     }
@@ -104,7 +113,7 @@ public class LeagueForm extends FormLayout {
         close.addClickShortcut(Key.ESCAPE);
 
         save.addClickListener(event -> validateAndSave());
-        delete.addClickListener(event -> fireEvent(new DeleteEvent(this, league)));
+        delete.addClickListener(event -> fireEvent(new DeleteEvent(this, team)));
         close.addClickListener(event -> fireEvent(new CloseEvent(this)));
 
         binder.addStatusChangeListener(e -> save.setEnabled(binder.isValid()));
@@ -113,8 +122,8 @@ public class LeagueForm extends FormLayout {
 
     private void validateAndSave() {
         try {
-            binder.writeBean(league);
-            fireEvent(new SaveEvent(this, league));
+            binder.writeBean(team);
+            fireEvent(new SaveEvent(this, team));
         } catch (ValidationException e) {
             e.printStackTrace();
         }

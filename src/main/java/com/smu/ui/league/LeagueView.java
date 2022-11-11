@@ -1,7 +1,9 @@
 package com.smu.ui.league;
 
-import com.smu.dto.League;
+import com.smu.dto.*;
 import com.smu.service.LeagueService;
+import com.smu.service.SeasonService;
+import com.smu.service.TeamService;
 import com.smu.ui.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -12,36 +14,51 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import org.springframework.beans.BeanUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Route(value = "", layout = MainLayout.class)
 @PageTitle("League | Project Group8")
 public class LeagueView extends VerticalLayout {
-    Grid<League> grid = new Grid<>(League.class);
+    Grid<LeagueVo> grid = new Grid<>(LeagueVo.class);
     TextField filterText = new TextField();
     LeagueForm form;
-    LeagueService service;
+    InitializeDialog dialog;
+    LeagueService leagueService;
+    TeamService teamService;
+    SeasonService seasonService;
 
-    public LeagueView(LeagueService service) {
-        this.service = service;
+    public LeagueView(LeagueService leagueService, TeamService teamService, SeasonService seasonService) {
+        this.leagueService = leagueService;
+        this.teamService = teamService;
+        this.seasonService = seasonService;
         addClassName("league-view");
         setSizeFull();
         configureGrid();
         configureForm();
         closeEditor();
         add(getToolbar(), getContent());
+
     }
 
     private void configureGrid() {
         grid.addClassNames("league-grid");
         grid.setSizeFull();
         grid.setColumns("name");
-        grid.addColumn(League::getCommissionerName).setHeader("Commissioner Name");
-        grid.addColumn(League::getCommissionerSsn).setHeader("Commissioner SSN");
+        grid.addColumn(LeagueVo::getCommissionerName).setHeader("Commissioner Name");
+        grid.addColumn(LeagueVo::getCommissionerSsn).setHeader("Commissioner SSN");
+        grid.addColumn(LeagueVo::getSeasonsNum).setHeader("Number of Seasons");
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
         this.updateList();
 
-        grid.asSingleSelect().addValueChangeListener(event ->
-                editLeague(event.getValue()));
+        grid.asSingleSelect().addValueChangeListener(event -> {
+                    League league = new League();
+                    BeanUtils.copyProperties(event.getValue(), league);
+                    editLeague(league);
+                }
+        );
     }
 
     private HorizontalLayout getToolbar() {
@@ -75,6 +92,12 @@ public class LeagueView extends VerticalLayout {
         form.addListener(LeagueForm.CloseEvent.class, e -> closeEditor());
     }
 
+    private void configureDialog() {
+        dialog = new InitializeDialog();
+        dialog.addListener(InitializeDialog.SaveEvent.class, this::saveInitializeVo);
+        dialog.addListener(InitializeDialog.CloseEvent.class, e -> closeInitializeDialog());
+    }
+
     private void closeEditor() {
         form.setLeague(null);
         form.setVisible(false);
@@ -99,18 +122,61 @@ public class LeagueView extends VerticalLayout {
     }
 
     private void saveLeague(LeagueForm.SaveEvent event) {
-        service.saveLeague(event.getLeague());
-        updateList();
-        closeEditor();
+        leagueService.saveLeague(event.getLeague());
+        Long teamsNum = teamService.countTeamsByLeague(event.getLeague().getName());
+        if (null == teamsNum || teamsNum <= 0) {
+            //open initialize team and season dialog
+            openInitializeDialog();
+        } else {
+            closeEditor();
+            updateList();
+        }
     }
 
     private void deleteLeague(LeagueForm.DeleteEvent event) {
-        service.deleteLeague(event.getLeague());
+        leagueService.deleteLeague(event.getLeague());
         updateList();
         closeEditor();
     }
 
+    private void saveInitializeVo(InitializeDialog.SaveEvent event) {
+        dialog.setInitializeVo(event.getInitializeVo());
+        InitializeVo initializeVo = event.getInitializeVo();
+        if (null != initializeVo) {
+            Team team = new Team();
+            team.setName(initializeVo.getName());
+            team.setCity(initializeVo.getCity());
+            team.setField(initializeVo.getField());
+            team.setLeagueName(form.league.getName());
+            teamService.saveTeam(team);
+            Season season = new Season();
+            season.setStartDate(initializeVo.getStartDate());
+            season.setEndDate(initializeVo.getEndDate());
+            season.setGamesNum(initializeVo.getGamesNum());
+            seasonService.saveSeason(season);
+        }
+        closeInitializeDialog();
+    }
+
+    private void openInitializeDialog() {
+        configureDialog();
+        dialog.open();
+    }
+
+    private void closeInitializeDialog() {
+        dialog.close();
+    }
+
     private void updateList() {
-        grid.setItems(service.findAllLeagues(filterText.getValue()));
+        List<LeagueVo> leagueVos = new ArrayList<>();
+        List<League> allLeagues = leagueService.findAllLeagues(filterText.getValue());
+        for (League allLeague : allLeagues) {
+            LeagueVo leagueVo = new LeagueVo();
+            BeanUtils.copyProperties(allLeague, leagueVo);
+            //TODO
+            leagueVo.setSeasonsNum(0);
+            leagueVos.add(leagueVo);
+        }
+        grid.setItems(leagueVos);
     }
 }

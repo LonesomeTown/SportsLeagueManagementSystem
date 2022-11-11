@@ -14,7 +14,7 @@ spring:
 
 logging:
   level:
-    org.springframework.data.mongodb.core: INFO
+    org.springframework.data.mongodb.core: debug
 
 vaadin:
   whitelisted-packages: com.vaadin,org.vaadin,com.smu.databaseteamproject
