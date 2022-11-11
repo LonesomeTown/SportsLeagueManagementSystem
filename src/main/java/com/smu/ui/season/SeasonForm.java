@@ -1,5 +1,6 @@
-package com.smu.ui.team;
+package com.smu.ui.season;
 
+import com.smu.dto.Season;
 import com.smu.dto.Team;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
@@ -7,7 +8,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -16,84 +17,79 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
 
-import java.util.List;
-
 /**
  * LeagueForm
  *
  * @author T.W 11/4/22
  */
-public class TeamForm extends FormLayout {
-    TextField name = new TextField("Team Name");
-    TextField city = new TextField("City of Team");
-    TextField field = new TextField("Field of team");
-    ComboBox<String> leagueName = new ComboBox<>("League Name");
+public class SeasonForm extends FormLayout {
+    DatePicker startDate = new DatePicker("Start Date");
+    DatePicker endDate = new DatePicker("End Date");
+    TextField gamesNum = new TextField("Numbers of Game");
 
 
     Button save = new Button("Save");
     Button delete = new Button("Delete");
     Button close = new Button("Cancel");
 
-    Binder<Team> binder = new BeanValidationBinder<>(Team.class);
+    Binder<Season> binder = new BeanValidationBinder<>(Season.class);
 
-    Team team;
+    Season season;
 
-    public TeamForm(List<String> leagues) {
-        addClassName("team-form");
+    public SeasonForm() {
+        addClassName("season-form");
 
-        name.setRequiredIndicatorVisible(true);
-        name.setErrorMessage("This field is required");
-        city.setRequiredIndicatorVisible(true);
-        city.setErrorMessage("This field is required");
-        field.setRequiredIndicatorVisible(true);
-        field.setErrorMessage("This field is required");
-        leagueName.setRequiredIndicatorVisible(true);
-        leagueName.setErrorMessage("This field is required");
-        leagueName.setItems(leagues);
+        startDate.setRequiredIndicatorVisible(true);
+        startDate.setErrorMessage("This field is required");
+        endDate.setRequiredIndicatorVisible(true);
+        endDate.setErrorMessage("This field is required");
+        startDate.addValueChangeListener(e -> endDate.setMin(e.getValue()));
+        endDate.addValueChangeListener(e -> startDate.setMax(e.getValue()));
+        gamesNum.setRequiredIndicatorVisible(true);
+        gamesNum.setErrorMessage("This field is required");
 
         binder.bindInstanceFields(this);
 
-        add(name,
-                city,
-                field,
-                leagueName,
+        add(startDate,
+                endDate,
+                gamesNum,
                 createButtonsLayout());
     }
 
     // Events
-    public abstract static class TeamFormEvent extends ComponentEvent<TeamForm> {
-        private final Team team;
+    public abstract static class SeasonFormEvent extends ComponentEvent<SeasonForm> {
+        private final Season season;
 
-        protected TeamFormEvent(TeamForm source, Team team) {
+        protected SeasonFormEvent(SeasonForm source, Season season) {
             super(source, false);
-            this.team = team;
+            this.season = season;
         }
 
-        public Team getTeam() {
-            return team;
-        }
-    }
-
-    public void setTeam(Team team) {
-        this.team = team;
-        binder.readBean(team);
-    }
-
-    public static class SaveEvent extends TeamFormEvent {
-        SaveEvent(TeamForm source, Team team) {
-            super(source, team);
+        public Season getSeason() {
+            return season;
         }
     }
 
-    public static class DeleteEvent extends TeamFormEvent {
-        DeleteEvent(TeamForm source, Team team) {
-            super(source, team);
+    public void setSeason(Season season) {
+        this.season = season;
+        binder.readBean(season);
+    }
+
+    public static class SaveEvent extends SeasonFormEvent {
+        SaveEvent(SeasonForm source, Season season) {
+            super(source, season);
+        }
+    }
+
+    public static class DeleteEvent extends SeasonFormEvent {
+        DeleteEvent(SeasonForm source, Season season) {
+            super(source, season);
         }
 
     }
 
-    public static class CloseEvent extends TeamFormEvent {
-        CloseEvent(TeamForm source) {
+    public static class CloseEvent extends SeasonFormEvent {
+        CloseEvent(SeasonForm source) {
             super(source, null);
         }
     }
@@ -113,7 +109,7 @@ public class TeamForm extends FormLayout {
         close.addClickShortcut(Key.ESCAPE);
 
         save.addClickListener(event -> validateAndSave());
-        delete.addClickListener(event -> fireEvent(new DeleteEvent(this, team)));
+        delete.addClickListener(event -> fireEvent(new DeleteEvent(this, season)));
         close.addClickListener(event -> fireEvent(new CloseEvent(this)));
 
         binder.addStatusChangeListener(e -> save.setEnabled(binder.isValid()));
@@ -122,8 +118,8 @@ public class TeamForm extends FormLayout {
 
     private void validateAndSave() {
         try {
-            binder.writeBean(team);
-            fireEvent(new SaveEvent(this, team));
+            binder.writeBean(season);
+            fireEvent(new SaveEvent(this, season));
         } catch (ValidationException e) {
             e.printStackTrace();
         }

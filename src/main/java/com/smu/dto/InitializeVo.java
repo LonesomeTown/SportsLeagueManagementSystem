@@ -5,6 +5,7 @@ import lombok.Data;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Date;
 
 /**
@@ -22,9 +23,9 @@ public class InitializeVo implements Serializable {
     @NotEmpty
     private String field;
     @NotNull
-    private Date startDate;
+    private LocalDate startDate;
     @NotNull
-    private Date endDate;
+    private LocalDate endDate;
     @NotNull
     private Integer gamesNum;
 

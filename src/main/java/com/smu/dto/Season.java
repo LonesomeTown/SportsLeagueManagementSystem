@@ -6,7 +6,9 @@ import lombok.experimental.Accessors;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Date;
 
 /**
@@ -20,9 +22,12 @@ public class Season implements Serializable {
     @MongoId
     private ObjectId id;
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date startDate;
+    @NotNull
+    private LocalDate startDate;
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date endDate;
+    @NotNull
+    private LocalDate endDate;
+    @NotNull
     private Integer gamesNum;
 
 }

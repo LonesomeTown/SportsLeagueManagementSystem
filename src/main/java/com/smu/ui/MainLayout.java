@@ -1,6 +1,7 @@
 package com.smu.ui;
 
 import com.smu.ui.league.LeagueView;
+import com.smu.ui.season.SeasonView;
 import com.smu.ui.team.TeamView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -40,11 +41,14 @@ public class MainLayout extends AppLayout {
         leagueLink.setHighlightCondition(HighlightConditions.sameLocation());
         RouterLink teamLink = new RouterLink("Team Management", TeamView.class);
         teamLink.setHighlightCondition(HighlightConditions.sameLocation());
+        RouterLink seasonLink = new RouterLink("Season Management", SeasonView.class);
+        teamLink.setHighlightCondition(HighlightConditions.sameLocation());
 
 
         addToDrawer(new VerticalLayout(
                 leagueLink,
                 teamLink,
+                seasonLink,
                 new RouterLink("Dashboard", DashboardView.class)
         ));
     }
