@@ -2,8 +2,12 @@ package com.smu.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.time.LocalDate;
 
 /**
@@ -13,7 +17,11 @@ import java.time.LocalDate;
  * @author T.W 11/3/22
  */
 @Data
-public class Game {
+public class Game implements Serializable {
+    // Data Fields
+    private static final long serialVersionUID = 1905122041950251207L;
+    @MongoId
+    private ObjectId id;
     @JsonFormat(pattern = "yyyy-MM-dd")
     @NotEmpty
     private LocalDate gameDate;
@@ -23,7 +31,7 @@ public class Game {
     private String homeTeam;
     @NotEmpty
     private String visitTeam;
-    @NotEmpty
-    private String score;
+    @NotNull
+    private float score;
 
 }
