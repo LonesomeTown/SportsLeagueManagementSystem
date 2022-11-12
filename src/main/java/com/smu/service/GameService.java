@@ -1,6 +1,7 @@
 package com.smu.service;
 
 import com.smu.dto.Game;
+import org.bson.types.ObjectId;
 
 import java.util.List;
 
@@ -16,4 +17,6 @@ public interface GameService {
      * @return: {@link List} <{@link Game}>
      */
     List<Game> findAllGames(String homeTeam, String visitTeam);
+
+    List<Game> findGamesBySeason(ObjectId seasonId);
 }
