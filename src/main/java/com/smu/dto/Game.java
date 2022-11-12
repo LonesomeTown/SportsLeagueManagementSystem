@@ -1,7 +1,8 @@
 package com.smu.dto;
 
-import cn.hutool.core.lang.ObjectId;
+
 import lombok.Data;
+import org.bson.types.ObjectId;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
