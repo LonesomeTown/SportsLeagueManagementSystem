@@ -35,4 +35,12 @@ public interface SeasonRepository extends MongoRepository<Season, ObjectId> {
      */
     @Query(value = "{'startDate':{ $gte: ?0, $lte: ?1}}")
     List<Season> findSeasonByEndDateBetween(LocalDate startDate, LocalDate endDate);
+
+    /**
+     * find the season whose start date is prior to the date input
+     * @param startDate
+     * @return {@link Season}
+     */
+    //@Query(value = "{'StartDate' : { $lte: ?0}}")
+    List<Season> findSeasonByStartDateBeforeAndEndDateAfter(LocalDate startDate, LocalDate endDate);
 }

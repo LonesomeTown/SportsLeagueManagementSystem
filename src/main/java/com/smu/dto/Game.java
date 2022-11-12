@@ -1,6 +1,6 @@
 package com.smu.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import cn.hutool.core.lang.ObjectId;
 import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
@@ -17,18 +17,19 @@ import java.time.LocalDate;
 @Data
 public class Game implements Serializable {
     // Data Fields
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    @NotNull
-    private LocalDate gameDate;
-    @NotEmpty
-    private String location;
     @NotEmpty
     private String homeTeamName;
     @NotEmpty
-    private String visitTeamName;
+    private String visitingTeamName;
+    @NotEmpty
+    private String location;
     @NotNull
-    private float homeTeamScore;
+    private LocalDate gameDate;
     @NotNull
-    private float visitTeamScore;
+    private Float homeScore;
+    @NotNull
+    private Float visitingScore;
+    @NotNull
+    private ObjectId seasonId;
 
 }

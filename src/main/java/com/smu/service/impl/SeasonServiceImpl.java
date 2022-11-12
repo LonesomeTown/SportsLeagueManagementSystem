@@ -8,7 +8,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -45,11 +44,20 @@ public class SeasonServiceImpl implements SeasonService {
     public String saveSeason(Season season) {
         LocalDate startDate = season.getStartDate();
         LocalDate endDate = season.getEndDate();
+        // newStart -- oldStart -- newEnd
         List<Season> startDateBetween = seasonRepository.findSeasonByStartDateBetween(startDate, endDate);
+        // newStart -- oldEnd -- newEnd
         List<Season> endDateBetween = seasonRepository.findSeasonByEndDateBetween(startDate, endDate);
+        // oldStart -- newStart -- newEnd -- oldEnd
+        List<Season> startDateBeforeAndEndDateAfter = seasonRepository.findSeasonByStartDateBeforeAndEndDateAfter(startDate, endDate);
+        // Conditions
         if (!CollectionUtils.isEmpty(startDateBetween) || !CollectionUtils.isEmpty(endDateBetween)) {
-            return "Start date or end date has already exited in other seasons!";
-        } else {
+            return "[Failed] Start date or end date has already exited in other seasons!";
+        }
+        else if (!CollectionUtils.isEmpty(startDateBeforeAndEndDateAfter)) {
+            return "[Failed] Season date schedule overlaps another existing season!";
+        }
+        else {
             seasonRepository.save(season);
             return "";
         }
