@@ -2,6 +2,7 @@ package com.smu.service;
 
 import com.smu.dto.Season;
 import com.smu.dto.Team;
+import org.bson.types.ObjectId;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -31,4 +32,10 @@ public interface SeasonService {
      * @param season season
      */
     void deleteSeason(Season season);
+
+    /**
+     * @param id id
+     * @return {@link Season}
+     */
+    Season findById(ObjectId id);
 }

@@ -3,6 +3,7 @@ package com.smu.dto;
 
 import lombok.Data;
 import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -18,6 +19,10 @@ import java.time.LocalDate;
 @Data
 public class Game implements Serializable {
     // Data Fields
+    @MongoId
+    private ObjectId id;
+    @NotNull
+    private ObjectId seasonId;
     @NotEmpty
     private String homeTeamName;
     @NotEmpty
@@ -26,11 +31,8 @@ public class Game implements Serializable {
     private String location;
     @NotNull
     private LocalDate gameDate;
-    @NotNull
     private Float homeScore;
-    @NotNull
     private Float visitingScore;
-    @NotNull
-    private ObjectId seasonId;
+
 
 }

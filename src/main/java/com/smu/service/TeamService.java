@@ -32,4 +32,10 @@ public interface TeamService {
      * @return {@link Long}
      */
     Long countTeamsByLeague(String leagueName);
+
+    /**
+     * @param teamName teamName
+     * @return {@link String}
+     */
+    String findFieldByTeamName(String teamName);
 }

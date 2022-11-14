@@ -5,6 +5,7 @@ import com.smu.repository.TeamRepository;
 import com.smu.service.TeamService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
@@ -43,5 +44,14 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public Long countTeamsByLeague(String leagueName) {
         return teamRepository.countTeamByLeagueName(leagueName);
+    }
+
+    @Override
+    public String findFieldByTeamName(String teamName) {
+        List<Team> teamsByNameEquals = teamRepository.findTeamsByNameEquals(teamName);
+        if(!CollectionUtils.isEmpty(teamsByNameEquals)){
+            return teamsByNameEquals.get(0).getField();
+        }
+        return null;
     }
 }

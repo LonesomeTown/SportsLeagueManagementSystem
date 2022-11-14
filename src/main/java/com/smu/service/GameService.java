@@ -19,4 +19,14 @@ public interface GameService {
     List<Game> findAllGames(String homeTeam, String visitTeam);
 
     List<Game> findGamesBySeason(ObjectId seasonId);
+
+    /**
+     * @param game game
+     */
+    String saveGame(Game game);
+
+    /**
+     * @param seasonId seasonId
+     */
+    void autoGenerateGamesBySeason(ObjectId seasonId);
 }

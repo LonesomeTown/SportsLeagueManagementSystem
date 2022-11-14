@@ -15,4 +15,6 @@ public interface TeamRepository extends MongoRepository<Team, String> {
     Long countTeamByLeagueName(String leagueName);
 
     List<Team> findTeamsByNameContains(String name);
+
+    List<Team> findTeamsByNameEquals(String name);
 }

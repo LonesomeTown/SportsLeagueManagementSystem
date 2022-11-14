@@ -19,7 +19,7 @@ public interface GameRepository extends MongoRepository<Game, String> {
      *  @return: a list of games that were played between the two teams
      *           including the details of each game
      */
-    List<Game> findGameByHomeTeamNameEqualsAndVisitingNameEquals(String homeTeam, String visitTeam);
+    List<Game> findGameByHomeTeamNameEqualsAndVisitingTeamNameEquals(String homeTeam, String visitTeam);
 
     /** Find all games within the same season
      * @param seasonId: the object id of the season input

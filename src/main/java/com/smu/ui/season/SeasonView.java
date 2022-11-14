@@ -1,12 +1,15 @@
 package com.smu.ui.season;
 
+import com.smu.dto.Game;
 import com.smu.dto.Season;
+import com.smu.service.GameService;
 import com.smu.service.SeasonService;
+import com.smu.service.TeamService;
 import com.smu.ui.MainLayout;
 import com.smu.ui.NotificationError;
-import com.smu.ui.team.TeamForm;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -14,6 +17,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.types.ObjectId;
 
 @Route(value = "season", layout = MainLayout.class)
 @PageTitle("League | Project Group8")
@@ -21,10 +25,15 @@ public class SeasonView extends VerticalLayout {
     Grid<Season> grid = new Grid<>(Season.class);
     DatePicker datePicker = new DatePicker();
     SeasonForm form;
+    GamesDialog dialog;
     private final SeasonService seasonService;
+    private final GameService gameService;
+    private final TeamService teamService;
 
-    public SeasonView(SeasonService seasonService) {
+    public SeasonView(SeasonService seasonService, GameService gameService, TeamService teamService) {
         this.seasonService = seasonService;
+        this.gameService = gameService;
+        this.teamService = teamService;
         addClassName("team-view");
         setSizeFull();
         configureGrid();
@@ -40,6 +49,9 @@ public class SeasonView extends VerticalLayout {
         grid.setColumns("startDate");
         grid.addColumn(Season::getEndDate).setHeader("End Date");
         grid.addColumn(Season::getGamesNum).setHeader("Numbers of Game");
+        grid.addComponentColumn(t -> createInlineButtonComponent(t.getId()));
+
+        grid.setDetailsVisibleOnClick(false);
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
         this.updateList();
 
@@ -67,6 +79,22 @@ public class SeasonView extends VerticalLayout {
         content.addClassNames("content");
         content.setSizeFull();
         return content;
+    }
+
+    private Button createInlineButtonComponent(ObjectId seasonId) {
+        Button tertiaryInlineButton = new Button("Details");
+        tertiaryInlineButton
+                .addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+        tertiaryInlineButton.addClickListener(e -> configureDialog(seasonId));
+        return tertiaryInlineButton;
+    }
+
+    private void configureDialog(ObjectId seasonId) {
+        Season season = seasonService.findById(seasonId);
+        dialog = new GamesDialog(season, gameService, teamService);
+        dialog.addListener(GamesDialog.SaveEvent.class, e -> saveGames(e, season.getId()));
+        dialog.addListener(GamesDialog.CloseEvent.class, e -> closeGameDialog());
+        dialog.open();
     }
 
     private void configureForm() {
@@ -113,6 +141,21 @@ public class SeasonView extends VerticalLayout {
         seasonService.deleteSeason(event.getSeason());
         updateList();
         closeEditor();
+    }
+
+    private void saveGames(GamesDialog.SaveEvent event, ObjectId seasonId) {
+        Game game = event.getGame();
+        game.setSeasonId(seasonId);
+        dialog.setGame(game);
+        String msg = gameService.saveGame(game);
+        if (StringUtils.isNotBlank(msg)) {
+            new NotificationError(msg);
+        }
+        dialog.updateGameGridList(seasonId);
+    }
+
+    private void closeGameDialog() {
+        dialog.close();
     }
 
     private void updateList() {

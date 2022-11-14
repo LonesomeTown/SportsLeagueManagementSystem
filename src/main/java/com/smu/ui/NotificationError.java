@@ -24,7 +24,6 @@ public class NotificationError extends Div {
         // the notification does not close automatically.
         Notification notification = new Notification();
         notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-        notification.setDuration(5);
 
         Div text = new Div(new Text(message));
 

@@ -3,12 +3,14 @@ package com.smu.service.impl;
 import com.smu.dto.Season;
 import com.smu.repository.SeasonRepository;
 import com.smu.service.SeasonService;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * SeasonServiceImpl
@@ -53,11 +55,9 @@ public class SeasonServiceImpl implements SeasonService {
         // Conditions
         if (!CollectionUtils.isEmpty(startDateBetween) || !CollectionUtils.isEmpty(endDateBetween)) {
             return "[Failed] Start date or end date has already exited in other seasons!";
-        }
-        else if (!CollectionUtils.isEmpty(startDateBeforeAndEndDateAfter)) {
+        } else if (!CollectionUtils.isEmpty(startDateBeforeAndEndDateAfter)) {
             return "[Failed] Season date schedule overlaps another existing season!";
-        }
-        else {
+        } else {
             seasonRepository.save(season);
             return "";
         }
@@ -66,5 +66,11 @@ public class SeasonServiceImpl implements SeasonService {
     @Override
     public void deleteSeason(Season season) {
         seasonRepository.delete(season);
+    }
+
+    @Override
+    public Season findById(ObjectId id) {
+        Optional<Season> byId = seasonRepository.findById(id);
+        return byId.orElseGet(Season::new);
     }
 }

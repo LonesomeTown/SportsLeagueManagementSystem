@@ -24,7 +24,6 @@ public class TeamView extends VerticalLayout {
     Grid<Team> grid = new Grid<>(Team.class);
     TextField filterText = new TextField();
     TeamForm form;
-    InitializeDialog dialog;
     LeagueService leagueService;
     TeamService teamService;
 
