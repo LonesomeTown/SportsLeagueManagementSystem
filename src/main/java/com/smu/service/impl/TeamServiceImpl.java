@@ -7,7 +7,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * TeamServiceImpl
@@ -49,9 +51,21 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public String findFieldByTeamName(String teamName) {
         List<Team> teamsByNameEquals = teamRepository.findTeamsByNameEquals(teamName);
-        if(!CollectionUtils.isEmpty(teamsByNameEquals)){
+        if (!CollectionUtils.isEmpty(teamsByNameEquals)) {
             return teamsByNameEquals.get(0).getField();
         }
         return null;
     }
+
+    @Override
+    public List<String> findAllTeamsName() {
+        List<Team> allTeams = this.findAllTeams("");
+        if (CollectionUtils.isEmpty(allTeams)) {
+            return new ArrayList<>();
+        } else {
+            return allTeams.stream().map(Team::getName).collect(Collectors.toList());
+        }
+    }
+
+
 }

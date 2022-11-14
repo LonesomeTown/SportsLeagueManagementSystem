@@ -114,11 +114,10 @@ public class GamesDialog extends Dialog {
 
         homeTeamName.setRequired(true);
         visitingTeamName.setRequired(true);
-        List<Team> allTeams = teamService.findAllTeams("");
-        if (!CollectionUtils.isEmpty(allTeams)) {
-            List<String> teamNames = allTeams.stream().map(Team::getName).collect(Collectors.toList());
-            homeTeamName.setItems(teamNames);
-            visitingTeamName.setItems(teamNames);
+        List<String> allTeamsName = teamService.findAllTeamsName();
+        if (!CollectionUtils.isEmpty(allTeamsName)) {
+            homeTeamName.setItems(allTeamsName);
+            visitingTeamName.setItems(allTeamsName);
         }
         List<String> locations = new ArrayList<>();
         homeTeamName.addValueChangeListener(e -> {

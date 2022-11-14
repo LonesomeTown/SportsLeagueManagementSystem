@@ -38,4 +38,9 @@ public interface TeamService {
      * @return {@link String}
      */
     String findFieldByTeamName(String teamName);
+
+    /**
+     * @return {@link List}<{@link String}>
+     */
+    List<String> findAllTeamsName();
 }
