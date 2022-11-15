@@ -8,16 +8,16 @@ import com.smu.service.GameService;
 import com.smu.service.TeamService;
 import com.smu.ui.MainLayout;
 import com.smu.ui.league.InitializeDialog;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -51,7 +51,8 @@ public class GamesDialog extends Dialog {
     Button cancelButton = new Button("Cancel");
     Button generateButton = new Button("Generate Randomly");
 
-    Grid<Game> grid = new Grid<>(Game.class);
+    Grid<Game> grid = new Grid<>(Game.class, false);
+    Editor<Game> editor = grid.getEditor();
 
     Binder<Game> binder = new BeanValidationBinder<>(Game.class);
 
@@ -96,18 +97,57 @@ public class GamesDialog extends Dialog {
 
     private void configureGrid(Season season) {
         grid.addClassNames("game-grid");
-        grid.setColumns("homeTeamName");
-        grid.addColumn(Game::getVisitingTeamName).setHeader("Visiting Team Name");
-        grid.addColumn(Game::getLocation).setHeader("Game Location");
-        grid.addColumn(Game::getGameDate).setHeader("Game Date");
-        grid.getColumns().forEach(col -> col.setAutoWidth(true));
+        Grid.Column<Game> homeTeamNameColumn = grid
+                .addColumn(Game::getHomeTeamName).setHeader("Home Team Name")
+                .setAutoWidth(true).setFlexGrow(0);
+        Grid.Column<Game> visitingTeamNameColumn = grid
+                .addColumn(Game::getVisitingTeamName).setHeader("Visiting Team Name")
+                .setAutoWidth(true).setFlexGrow(0);
+        Grid.Column<Game> locationColumn = grid
+                .addColumn(Game::getLocation).setHeader("Game Location")
+                .setAutoWidth(true).setFlexGrow(0);
+        Grid.Column<Game> gameDateColumn = grid
+                .addColumn(Game::getGameDate).setHeader("Game Date")
+                .setAutoWidth(true).setFlexGrow(0);
+        Grid.Column<Game> homeScoreColumn = grid
+                .addColumn(Game::getHomeScore).setHeader("Home Score")
+                .setAutoWidth(true).setFlexGrow(0);
+        Grid.Column<Game> visitingScoreColumn = grid
+                .addColumn(Game::getVisitingScore).setHeader("Visiting Score")
+                .setAutoWidth(true).setFlexGrow(0);
+
+        Binder<Game> gridBinder = new Binder<>(Game.class);
+        editor.setBinder(gridBinder);
+
+        ComboBox<String> gridHomeTeam = new ComboBox<>();
+        gridHomeTeam.setWidthFull();
+        binder.forField(gridHomeTeam)
+                .asRequired("Home team name must not be empty")
+                .bind(Game::getHomeTeamName, Game::setHomeTeamName);
+        homeTeamNameColumn.setEditorComponent(gridHomeTeam);
+
+        grid.addItemDoubleClickListener(e -> {
+            editor.editItem(e.getItem());
+            Component editorComponent = e.getColumn().getEditorComponent();
+            if (editorComponent instanceof Focusable) {
+                ((Focusable) editorComponent).focus();
+            }
+        });
+
         grid.setPageSize(5);
         updateGameGridList(season.getId());
+
     }
 
     public void updateGameGridList(ObjectId id) {
         List<Game> gamesBySeason = gameService.findGamesBySeason(id);
         grid.setItems(gamesBySeason);
+    }
+
+    private static void addCloseHandler(Component textField,
+                                        Editor<Game> editor) {
+        textField.getElement().addEventListener("keydown", e -> editor.cancel())
+                .setFilter("event.code === 'Escape'");
     }
 
     private VerticalLayout createDialogLayout(Season season) {
@@ -152,6 +192,7 @@ public class GamesDialog extends Dialog {
 
         dialogLayout.setPadding(false);
         dialogLayout.setSpacing(false);
+        dialogLayout.setSizeFull();
         dialogLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
         dialogLayout.getStyle().set("width", "650px").set("max-width", "100%");
 
@@ -160,6 +201,7 @@ public class GamesDialog extends Dialog {
 
     private void createButtonLayout(Dialog dialog) {
         generateButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        generateButton.addClickListener(event -> fireEvent(new GenerateEvent(this, game)));
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         saveButton.addClickShortcut(Key.ENTER);
         saveButton.addClickListener(event -> {
@@ -202,6 +244,13 @@ public class GamesDialog extends Dialog {
             super(source, null);
         }
     }
+
+    public static class GenerateEvent extends GameDialogEvent {
+        GenerateEvent(GamesDialog source, Game game) {
+            super(source, game);
+        }
+    }
+
 
     @Override
     public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,

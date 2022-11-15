@@ -9,6 +9,7 @@ import com.smu.ui.league.InitializeDialog;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -46,7 +47,7 @@ public class TeamView extends VerticalLayout {
         grid.addColumn(Team::getCity).setHeader("City of Team");
         grid.addColumn(Team::getField).setHeader("Field of Team");
         grid.addColumn(Team::getLeagueName).setHeader("League Name");
-        grid.addColumn(Team::getRating).setHeader("Rating");
+        grid.addColumn(Team::getRating).setHeader("Rating").setSortable(true);
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
         this.updateList();
 

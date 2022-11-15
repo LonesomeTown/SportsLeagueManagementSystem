@@ -6,15 +6,15 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.router.Route;
 
 @Route("notification-error")
-public class NotificationError extends Div {
+public class NotificationSuccess extends Div {
 
-    public NotificationError(String message) {
+    public NotificationSuccess(String message) {
         show(message);
     }
 
     public void show(String message) {
         VaadinUtils vaadinUtils = new VaadinUtils();
-        vaadinUtils.builtNotification(message, NotificationVariant.LUMO_ERROR);
+        vaadinUtils.builtNotification(message, NotificationVariant.LUMO_SUCCESS);
     }
 
 }

@@ -7,6 +7,7 @@ import com.smu.service.SeasonService;
 import com.smu.service.TeamService;
 import com.smu.ui.MainLayout;
 import com.smu.ui.NotificationError;
+import com.smu.ui.NotificationSuccess;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -82,7 +83,7 @@ public class SeasonView extends VerticalLayout {
     }
 
     private Button createInlineButtonComponent(ObjectId seasonId) {
-        Button tertiaryInlineButton = new Button("Details");
+        Button tertiaryInlineButton = new Button("Game Details");
         tertiaryInlineButton
                 .addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
         tertiaryInlineButton.addClickListener(e -> configureDialog(seasonId));
@@ -94,11 +95,12 @@ public class SeasonView extends VerticalLayout {
         dialog = new GamesDialog(season, gameService, teamService);
         dialog.addListener(GamesDialog.SaveEvent.class, e -> saveGames(e, season.getId()));
         dialog.addListener(GamesDialog.CloseEvent.class, e -> closeGameDialog());
+        dialog.addListener(GamesDialog.GenerateEvent.class, e -> autoGenerateGames(season.getId()));
         dialog.open();
     }
 
     private void configureForm() {
-        form = new com.smu.ui.season.SeasonForm();
+        form = new SeasonForm();
         form.setWidth("25em");
         form.addListener(SeasonForm.SaveEvent.class, this::saveSeason);
         form.addListener(SeasonForm.DeleteEvent.class, this::deleteSeason);
@@ -152,6 +154,12 @@ public class SeasonView extends VerticalLayout {
             new NotificationError(msg);
         }
         dialog.updateGameGridList(seasonId);
+    }
+
+    private void autoGenerateGames(ObjectId seasonId) {
+        gameService.autoGenerateGamesBySeason(seasonId);
+        dialog.updateGameGridList(seasonId);
+        new NotificationSuccess("Generate Successfully!");
     }
 
     private void closeGameDialog() {
