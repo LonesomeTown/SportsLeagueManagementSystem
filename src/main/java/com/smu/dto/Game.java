@@ -33,6 +33,4 @@ public class Game implements Serializable {
     private LocalDate gameDate;
     private Float homeScore;
     private Float visitingScore;
-
-
 }

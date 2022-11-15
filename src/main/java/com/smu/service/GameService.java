@@ -27,6 +27,8 @@ public interface GameService {
 
     /**
      * @param seasonId seasonId
+     * @return
      */
-    void autoGenerateGamesBySeason(ObjectId seasonId);
+    String autoGenerateGamesBySeason(ObjectId seasonId);
+
 }

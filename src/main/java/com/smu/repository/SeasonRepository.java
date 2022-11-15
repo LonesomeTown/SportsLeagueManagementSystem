@@ -21,6 +21,13 @@ public interface SeasonRepository extends MongoRepository<Season, ObjectId> {
     Season findSeasonByStartDateEquals(LocalDate startDate);
 
     /**
+     * find season by its id number
+     * @param id
+     * @return {@link Season}
+     */
+    Season findSeasonByIdEquals(ObjectId id);
+
+    /**
      * find if any startDate exist in new season duration
      *
      * @return {@link Season}
@@ -43,4 +50,6 @@ public interface SeasonRepository extends MongoRepository<Season, ObjectId> {
      */
     //@Query(value = "{'StartDate' : { $lte: ?0}}")
     List<Season> findSeasonByStartDateBeforeAndEndDateAfter(LocalDate startDate, LocalDate endDate);
+
+
 }

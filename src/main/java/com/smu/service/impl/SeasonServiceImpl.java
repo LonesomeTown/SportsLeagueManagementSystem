@@ -52,15 +52,20 @@ public class SeasonServiceImpl implements SeasonService {
         List<Season> endDateBetween = seasonRepository.findSeasonByEndDateBetween(startDate, endDate);
         // oldStart -- newStart -- newEnd -- oldEnd
         List<Season> startDateBeforeAndEndDateAfter = seasonRepository.findSeasonByStartDateBeforeAndEndDateAfter(startDate, endDate);
+        // Season ID identifier
+        ObjectId seasonId = season.getId();
+        Season duplicateId = seasonRepository.findSeasonByIdEquals(seasonId);
         // Conditions
-        if (!CollectionUtils.isEmpty(startDateBetween) || !CollectionUtils.isEmpty(endDateBetween)) {
+        if (duplicateId != null) {
+            seasonRepository.save(season);
+        } else if (!CollectionUtils.isEmpty(startDateBetween) || !CollectionUtils.isEmpty(endDateBetween)) {
             return "[Failed] Start date or end date has already exited in other seasons!";
         } else if (!CollectionUtils.isEmpty(startDateBeforeAndEndDateAfter)) {
             return "[Failed] Season date schedule overlaps another existing season!";
         } else {
             seasonRepository.save(season);
-            return "";
         }
+        return "";
     }
 
     @Override
