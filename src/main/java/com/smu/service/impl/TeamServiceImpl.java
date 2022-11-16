@@ -1,12 +1,16 @@
 package com.smu.service.impl;
 
+import com.smu.dto.Season;
 import com.smu.dto.Team;
+import com.smu.repository.SeasonRepository;
 import com.smu.repository.TeamRepository;
 import com.smu.service.TeamService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,9 +23,11 @@ import java.util.stream.Collectors;
 @Service
 public class TeamServiceImpl implements TeamService {
     private final TeamRepository teamRepository;
+    private final SeasonRepository seasonRepository;
 
-    public TeamServiceImpl(TeamRepository teamRepository) {
+    public TeamServiceImpl(TeamRepository teamRepository, SeasonRepository seasonRepository) {
         this.teamRepository = teamRepository;
+        this.seasonRepository = seasonRepository;
     }
 
     @Override
@@ -64,6 +70,25 @@ public class TeamServiceImpl implements TeamService {
             return new ArrayList<>();
         } else {
             return allTeams.stream().map(Team::getName).collect(Collectors.toList());
+        }
+    }
+
+    @Override
+    public String moveTeam(Team team, String leagueName) {
+        // Get current date
+        LocalDate current = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        current = LocalDate.parse(current.format(formatter));
+        // Compare the date with season schedule
+        // Violation case:
+        //    seasonStart -- current -- seasonEnd
+        List<Season> seasonsByStartDateBeforeAndEndDateAfter = seasonRepository.findSeasonByStartDateBeforeAndEndDateAfter(current, current);
+        if (!seasonsByStartDateBeforeAndEndDateAfter.isEmpty()) {
+            team.setLeagueName(leagueName);
+            teamRepository.save(team);
+            return "";
+        } else {
+            return "[Failed] Unable to change league due to season date conflict!";
         }
     }
 

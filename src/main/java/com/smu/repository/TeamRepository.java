@@ -1,6 +1,5 @@
 package com.smu.repository;
 
-import com.smu.dto.League;
 import com.smu.dto.Team;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
@@ -17,4 +16,5 @@ public interface TeamRepository extends MongoRepository<Team, String> {
     List<Team> findTeamsByNameContains(String name);
 
     List<Team> findTeamsByNameEquals(String name);
+
 }

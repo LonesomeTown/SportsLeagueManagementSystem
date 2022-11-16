@@ -1,7 +1,6 @@
 package com.smu.dto;
 
 import lombok.Data;
-import lombok.experimental.Accessors;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import javax.validation.constraints.NotEmpty;

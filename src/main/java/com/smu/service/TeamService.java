@@ -1,6 +1,5 @@
 package com.smu.service;
 
-import com.smu.dto.League;
 import com.smu.dto.Team;
 
 import java.util.List;
@@ -43,4 +42,10 @@ public interface TeamService {
      * @return {@link List}<{@link String}>
      */
     List<String> findAllTeamsName();
+
+    /**
+     *  @param team team name
+     *  @param leagueName leagueName
+     */
+    String moveTeam(Team team, String leagueName);
 }
