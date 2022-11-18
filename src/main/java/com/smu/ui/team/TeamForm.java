@@ -10,6 +10,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
@@ -28,6 +29,7 @@ public class TeamForm extends FormLayout {
     TextField city = new TextField("City of Team");
     TextField field = new TextField("Field of team");
     ComboBox<String> leagueName = new ComboBox<>("League Name");
+    NumberField rating = new NumberField("Rating");
 
 
     Button save = new Button("Save");
@@ -50,6 +52,9 @@ public class TeamForm extends FormLayout {
         leagueName.setRequiredIndicatorVisible(true);
         leagueName.setErrorMessage("This field is required");
         leagueName.setItems(leagues);
+        rating.setStep(0.5);
+        rating.setValue(0.0);
+        rating.setHasControls(true);
 
         binder.bindInstanceFields(this);
 

@@ -1,6 +1,7 @@
 package com.smu.dto;
 
 
+import com.smu.GameResultEnum;
 import lombok.Data;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.MongoId;
@@ -31,6 +32,7 @@ public class Game implements Serializable {
     private String location;
     @NotNull
     private LocalDate gameDate;
-    private Float homeScore;
-    private Float visitingScore;
+    private Double homeScore;
+    private Double visitingScore;
+    private GameResultEnum gameResult;
 }

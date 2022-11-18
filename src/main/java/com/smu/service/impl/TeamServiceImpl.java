@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -41,7 +42,12 @@ public class TeamServiceImpl implements TeamService {
 
     @Override
     public void saveTeam(Team team) {
-        teamRepository.save(team);
+        Optional<Team> oldTeam = teamRepository.findById(team.getName());
+        if (oldTeam.isPresent() && !oldTeam.get().getLeagueName().equals(team.getLeagueName())) {
+            this.moveTeam(team, team.getLeagueName());
+        } else {
+            teamRepository.save(team);
+        }
     }
 
     @Override

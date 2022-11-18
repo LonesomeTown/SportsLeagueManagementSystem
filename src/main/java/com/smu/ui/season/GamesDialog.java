@@ -1,5 +1,6 @@
 package com.smu.ui.season;
 
+import com.smu.GameResultEnum;
 import com.smu.dto.Game;
 import com.smu.dto.InitializeVo;
 import com.smu.dto.Season;
@@ -11,6 +12,7 @@ import com.smu.ui.league.InitializeDialog;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -21,6 +23,8 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
@@ -33,6 +37,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -109,11 +114,8 @@ public class GamesDialog extends Dialog {
         Grid.Column<Game> gameDateColumn = grid
                 .addColumn(Game::getGameDate).setHeader("Game Date")
                 .setAutoWidth(true).setFlexGrow(0);
-        Grid.Column<Game> homeScoreColumn = grid
-                .addColumn(Game::getHomeScore).setHeader("Home Score")
-                .setAutoWidth(true).setFlexGrow(0);
-        Grid.Column<Game> visitingScoreColumn = grid
-                .addColumn(Game::getVisitingScore).setHeader("Visiting Score")
+        Grid.Column<Game> gameResultColumn = grid
+                .addColumn(Game::getHomeScore).setHeader("Game Result")
                 .setAutoWidth(true).setFlexGrow(0);
 
         Binder<Game> gridBinder = new Binder<>(Game.class);
@@ -121,10 +123,50 @@ public class GamesDialog extends Dialog {
 
         ComboBox<String> gridHomeTeam = new ComboBox<>();
         gridHomeTeam.setWidthFull();
-        binder.forField(gridHomeTeam)
+        gridBinder.forField(gridHomeTeam)
                 .asRequired("Home team name must not be empty")
                 .bind(Game::getHomeTeamName, Game::setHomeTeamName);
         homeTeamNameColumn.setEditorComponent(gridHomeTeam);
+
+        ComboBox<String> gridVisitingTeam = new ComboBox<>();
+        gridVisitingTeam.setWidthFull();
+        gridBinder.forField(gridVisitingTeam)
+                .asRequired("Visiting team name must not be empty")
+                .bind(Game::getVisitingTeamName, Game::setVisitingTeamName);
+        visitingTeamNameColumn.setEditorComponent(gridVisitingTeam);
+
+        List<String> allTeamsName = teamService.findAllTeamsName();
+        if (!CollectionUtils.isEmpty(allTeamsName)) {
+            gridHomeTeam.setItems(allTeamsName);
+            gridVisitingTeam.setItems(allTeamsName);
+        }
+
+        ComboBox<String> gridLocation = new ComboBox<>();
+        List<String> gridLocations = new ArrayList<>();
+        gridHomeTeam.addValueChangeListener(e -> this.addLocations(gridLocations, gridLocation, e.getValue()));
+        gridVisitingTeam.addValueChangeListener(e -> this.addLocations(gridLocations, gridLocation, e.getValue()));
+        gridLocation.setWidthFull();
+        gridBinder.forField(gridLocation)
+                .asRequired("Game location must not be empty")
+                .bind(Game::getLocation, Game::setLocation);
+        locationColumn.setEditorComponent(gridLocation);
+
+        DatePicker gridGameDate = new DatePicker();
+        gridGameDate.setWidthFull();
+        gridGameDate.setMax(season.getEndDate());
+        gridGameDate.setMin(season.getStartDate());
+        gridBinder.forField(gridGameDate)
+                .asRequired("Game date must not be empty")
+                .bind(Game::getGameDate, Game::setGameDate);
+        gameDateColumn.setEditorComponent(gridGameDate);
+
+        ComboBox<GameResultEnum> gameResult = new ComboBox<>();
+        gameResult.setWidthFull();
+        gameResult.setItems(GameResultEnum.values());
+        gridBinder.forField(gameResult)
+                .bind(Game::getGameResult, Game::setGameResult);
+        gameResultColumn.setEditorComponent(gameResult);
+
 
         grid.addItemDoubleClickListener(e -> {
             editor.editItem(e.getItem());
@@ -137,6 +179,16 @@ public class GamesDialog extends Dialog {
         grid.setPageSize(5);
         updateGameGridList(season.getId());
 
+    }
+
+    private void addLocations(List<String> locations, ComboBox<String> location, String teamName) {
+        String fieldByTeamName = teamService.findFieldByTeamName(teamName);
+        if (StringUtils.isNotEmpty(fieldByTeamName)) {
+            locations.add(fieldByTeamName);
+        }
+        if (!CollectionUtils.isEmpty(locations)) {
+            location.setItems(locations);
+        }
     }
 
     public void updateGameGridList(ObjectId id) {
@@ -160,24 +212,8 @@ public class GamesDialog extends Dialog {
             visitingTeamName.setItems(allTeamsName);
         }
         List<String> locations = new ArrayList<>();
-        homeTeamName.addValueChangeListener(e -> {
-            String fieldByTeamName = teamService.findFieldByTeamName(e.getValue());
-            if (StringUtils.isNotEmpty(fieldByTeamName)) {
-                locations.add(fieldByTeamName);
-            }
-            if (!CollectionUtils.isEmpty(locations)) {
-                location.setItems(locations);
-            }
-        });
-        visitingTeamName.addValueChangeListener(e -> {
-            String fieldByTeamName = teamService.findFieldByTeamName(e.getValue());
-            if (StringUtils.isNotEmpty(fieldByTeamName)) {
-                locations.add(fieldByTeamName);
-            }
-            if (!CollectionUtils.isEmpty(locations)) {
-                location.setItems(locations);
-            }
-        });
+        homeTeamName.addValueChangeListener(e -> this.addLocations(locations, location, e.getValue()));
+        visitingTeamName.addValueChangeListener(e -> this.addLocations(locations, location, e.getValue()));
         location.setRequired(true);
         gameDate.setRequired(true);
         gameDate.setMax(season.getEndDate());

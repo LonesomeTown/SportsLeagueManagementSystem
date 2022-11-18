@@ -15,7 +15,7 @@ public class ScoringCriteria {
     @MongoId
     private ObjectId id;
     private String seasonId;
-    private Float wonPoints;
-    private Float drawnPoints;
-    private Float lostPoints;
+    private Double wonPoints;
+    private Double drawnPoints;
+    private Double lostPoints;
 }

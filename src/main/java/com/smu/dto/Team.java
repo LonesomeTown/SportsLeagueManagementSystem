@@ -23,5 +23,5 @@ public class Team implements Serializable {
     private String field;
     @NotEmpty
     private String leagueName;
-    private Float rating;
+    private Double rating;
 }

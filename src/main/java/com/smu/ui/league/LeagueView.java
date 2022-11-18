@@ -156,6 +156,8 @@ public class LeagueView extends VerticalLayout {
             seasonService.saveSeason(season);
         }
         closeInitializeDialog();
+        closeEditor();
+        updateList();
     }
 
     private void openInitializeDialog() {
