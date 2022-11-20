@@ -10,6 +10,8 @@ import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +28,16 @@ public class GameServiceImpl implements GameService {
     private final GameRepository gameRepository;
     private final SeasonService seasonService;
     private final TeamService teamService;
+
+    private Random random;
+
+    {
+        try {
+            random = SecureRandom.getInstanceStrong();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+    }
 
     public GameServiceImpl(GameRepository gameRepository, SeasonService seasonService, TeamService teamService) {
         this.gameRepository = gameRepository;
@@ -48,25 +60,32 @@ public class GameServiceImpl implements GameService {
         ObjectId seasonId = game.getSeasonId();
         Season season = seasonService.findById(seasonId);
         Integer gamesNum = season.getGamesNum();
+        if (this.ifDuplicateGameInfo(game)) {
+            return "[Failed] Game conflict detected!";
+        }
         List<Game> gameBySeasonId = gameRepository.findGameBySeasonIdEquals(seasonId);
         if (gameBySeasonId.size() < gamesNum) {
             gameRepository.save(game);
             return "";
-        }else {
-            return "Games in this season are already full!";
+        } else {
+            return "[Failed] Games in this season are already full!";
         }
     }
 
     @Override
-    public String autoGenerateGamesBySeason(ObjectId seasonId){
+    public String autoGenerateGamesBySeason(ObjectId seasonId) {
         Season season = seasonService.findById(seasonId);
         Integer gamesNum = season.getGamesNum();
         List<Game> games = new ArrayList<>();
         List<String> allTeamsName = teamService.findAllTeamsName();
-        if(CollectionUtils.isEmpty(allTeamsName)){
+        if (CollectionUtils.isEmpty(allTeamsName)) {
             return null;
         }
-        Random random = new Random();
+        List<Game> gameBySeasonId = gameRepository.findGameBySeasonIdEquals(seasonId);
+        if (!CollectionUtils.isEmpty(gameBySeasonId)) {
+            // Games num is equal to the require games number - games already exist
+            gamesNum = gamesNum - gameBySeasonId.size();
+        }
         for (int i = 0; i < gamesNum; i++) {
             Game game = new Game();
             game.setSeasonId(seasonId);
@@ -78,30 +97,45 @@ public class GameServiceImpl implements GameService {
             }
 
             // Set locations
-            String field= teamService.findFieldByTeamName(allTeamsName.get(randomHomeTeamNameIndex));
+            String field = teamService.findFieldByTeamName(allTeamsName.get(randomHomeTeamNameIndex));
 
             //localDate date
             long seasonLength = season.getEndDate().toEpochDay() - season.getStartDate().toEpochDay();
-            long randomSpan = random.nextInt((int)seasonLength);
+            long randomSpan = random.nextInt((int) seasonLength);
             LocalDate gameDate = season.getStartDate().plusDays(randomSpan);
             //List<String> duplicateHomeAndVisitTeams = gameRepository.findGameByGameDateEqualsAndHomeTeamNameEqualsAndVisitingTeamNameEquals()
             game.setHomeTeamName(allTeamsName.get(randomHomeTeamNameIndex));
             game.setVisitingTeamName(allTeamsName.get(randomVisitingTeamNameIndex));
             game.setLocation(field);
             game.setGameDate(gameDate);
-            List<Game> duplicateHomeAndVisitTeams = gameRepository.findGameByGameDateEqualsAndHomeTeamNameEqualsAndVisitingTeamNameEquals(
-                    game.getGameDate(),
-                    game.getHomeTeamName(),
-                    game.getVisitingTeamName()
-            );
-            if (!duplicateHomeAndVisitTeams.isEmpty()) {
-                 return "[Failed] Auto-generated game conflict detected!";
+            if (this.ifDuplicateGameInfo(game)) {
+                return "[Failed] Auto-generated game conflict detected!";
             }
             games.add(game);
         }
         // Save games
         gameRepository.saveAll(games);
         return "";
+    }
+
+    @Override
+    public void removeGame(Game game) {
+        if (null == game || null == game.getId()) {
+            return;
+        }
+        this.gameRepository.delete(game);
+    }
+
+    private boolean ifDuplicateGameInfo(Game game) {
+        List<Game> duplicateHomeAndVisitTeams = gameRepository.findGameByGameDateEqualsAndHomeTeamNameEqualsAndVisitingTeamNameEquals(
+                game.getGameDate(),
+                game.getHomeTeamName(),
+                game.getVisitingTeamName()
+        );
+        if (!CollectionUtils.isEmpty(duplicateHomeAndVisitTeams)) {
+            duplicateHomeAndVisitTeams.removeIf(g -> game.getId().equals(g.getId()));
+        }
+        return !CollectionUtils.isEmpty(duplicateHomeAndVisitTeams);
     }
 
 }

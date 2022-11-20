@@ -48,4 +48,10 @@ public interface TeamService {
      *  @param leagueName leagueName
      */
     String moveTeam(Team team, String leagueName);
+
+    /**
+     * @param leagueName leagueName
+     * @return {@link List}<{@link String}>
+     */
+    List<String> findTeamNamesByLeagueName(String leagueName);
 }

@@ -1,8 +1,10 @@
 package com.smu.ui.season;
 
 import com.smu.dto.Game;
+import com.smu.dto.League;
 import com.smu.dto.Season;
 import com.smu.service.GameService;
+import com.smu.service.LeagueService;
 import com.smu.service.SeasonService;
 import com.smu.service.TeamService;
 import com.smu.ui.MainLayout;
@@ -11,27 +13,33 @@ import com.smu.ui.NotificationSuccess;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Route(value = "season", layout = MainLayout.class)
 @PageTitle("League | Project Group8")
 public class SeasonView extends VerticalLayout {
     Grid<Season> grid = new Grid<>(Season.class);
-    DatePicker datePicker = new DatePicker();
+    ComboBox<String> textField = new ComboBox();
     SeasonForm form;
     GamesDialog dialog;
+    private final LeagueService leagueService;
     private final SeasonService seasonService;
     private final GameService gameService;
     private final TeamService teamService;
 
-    public SeasonView(SeasonService seasonService, GameService gameService, TeamService teamService) {
+    public SeasonView(LeagueService leagueService, SeasonService seasonService, GameService gameService, TeamService teamService) {
+        this.leagueService = leagueService;
         this.seasonService = seasonService;
         this.gameService = gameService;
         this.teamService = teamService;
@@ -47,7 +55,8 @@ public class SeasonView extends VerticalLayout {
     private void configureGrid() {
         grid.addClassNames("season-grid");
         grid.setSizeFull();
-        grid.setColumns("startDate");
+        grid.setColumns("leagueName");
+        grid.addColumn(Season::getStartDate).setHeader("Start Date");
         grid.addColumn(Season::getEndDate).setHeader("End Date");
         grid.addColumn(Season::getGamesNum).setHeader("Numbers of Game");
         grid.addComponentColumn(t -> createInlineButtonComponent(t.getId()));
@@ -61,14 +70,16 @@ public class SeasonView extends VerticalLayout {
     }
 
     private HorizontalLayout getToolbar() {
-        datePicker.setPlaceholder("Filter by start date...");
-        datePicker.setClearButtonVisible(true);
-        datePicker.addValueChangeListener(e -> updateList());
+        List<League> allLeagues = leagueService.findAllLeagues("");
+        textField.setItems(allLeagues.stream().map(League::getName).collect(Collectors.toList()));
+        textField.setPlaceholder("Filter by league name...");
+        textField.setClearButtonVisible(true);
+        textField.addValueChangeListener(e -> updateList());
 
         Button addSeasonButton = new Button("Add season");
         addSeasonButton.addClickListener(click -> addSeason());
 
-        HorizontalLayout toolbar = new HorizontalLayout(datePicker, addSeasonButton);
+        HorizontalLayout toolbar = new HorizontalLayout(textField, addSeasonButton);
         toolbar.addClassName("toolbar");
         return toolbar;
     }
@@ -100,7 +111,8 @@ public class SeasonView extends VerticalLayout {
     }
 
     private void configureForm() {
-        form = new SeasonForm();
+        List<League> allLeagues = leagueService.findAllLeagues("");
+        form = new SeasonForm(allLeagues.stream().map(League::getName).collect(Collectors.toList()));
         form.setWidth("25em");
         form.addListener(SeasonForm.SaveEvent.class, this::saveSeason);
         form.addListener(SeasonForm.DeleteEvent.class, this::deleteSeason);
@@ -126,7 +138,7 @@ public class SeasonView extends VerticalLayout {
     private void addSeason() {
         grid.asSingleSelect().clear();
         Season season = new Season();
-        season.setStartDate(datePicker.getValue());
+        season.setLeagueName(textField.getValue());
         editSeason(season);
     }
 
@@ -167,6 +179,6 @@ public class SeasonView extends VerticalLayout {
     }
 
     private void updateList() {
-        grid.setItems(seasonService.findSeasonsByStartDate(datePicker.getValue()));
+        grid.setItems(seasonService.findSeasonsByLeagueName(textField.getValue()));
     }
 }

@@ -1,4 +1,4 @@
-package com.smu;
+package com.smu.constant;
 
 /**
  * GameResultEnum
@@ -7,9 +7,9 @@ package com.smu;
  */
 public enum GameResultEnum {
 
-    HOME_TEAM_WON(1, "Home Team Won"),
+    WON(1, "Home Team Won"),
     DRAWN(0, "Drawn"),
-    HOME_TEAM_LOST(-1, "Home Team Lost");
+    LOST(-1, "Home Team Lost");
 
     private final int code;
     private final String description;

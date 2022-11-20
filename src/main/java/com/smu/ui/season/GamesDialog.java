@@ -1,45 +1,36 @@
 package com.smu.ui.season;
 
-import com.smu.GameResultEnum;
+import com.smu.constant.GameResultEnum;
 import com.smu.dto.Game;
-import com.smu.dto.InitializeVo;
 import com.smu.dto.Season;
-import com.smu.dto.Team;
 import com.smu.service.GameService;
 import com.smu.service.TeamService;
-import com.smu.ui.MainLayout;
-import com.smu.ui.league.InitializeDialog;
+import com.smu.ui.NotificationError;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.NumberField;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.shared.Registration;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.Resource;
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * GamesDialog
@@ -86,7 +77,7 @@ public class GamesDialog extends Dialog {
         dialog.add(dialogLayout);
 
         dialog.setModal(false);
-        dialog.setWidth("650px");
+        dialog.setWidth("50%");
 
         createButtonLayout(dialog);
 
@@ -101,6 +92,7 @@ public class GamesDialog extends Dialog {
     }
 
     private void configureGrid(Season season) {
+
         grid.addClassNames("game-grid");
         Grid.Column<Game> homeTeamNameColumn = grid
                 .addColumn(Game::getHomeTeamName).setHeader("Home Team Name")
@@ -115,7 +107,7 @@ public class GamesDialog extends Dialog {
                 .addColumn(Game::getGameDate).setHeader("Game Date")
                 .setAutoWidth(true).setFlexGrow(0);
         Grid.Column<Game> gameResultColumn = grid
-                .addColumn(Game::getHomeScore).setHeader("Game Result")
+                .addColumn(Game::getGameResult).setHeader("Game Result")
                 .setAutoWidth(true).setFlexGrow(0);
 
         Binder<Game> gridBinder = new Binder<>(Game.class);
@@ -135,10 +127,10 @@ public class GamesDialog extends Dialog {
                 .bind(Game::getVisitingTeamName, Game::setVisitingTeamName);
         visitingTeamNameColumn.setEditorComponent(gridVisitingTeam);
 
-        List<String> allTeamsName = teamService.findAllTeamsName();
-        if (!CollectionUtils.isEmpty(allTeamsName)) {
-            gridHomeTeam.setItems(allTeamsName);
-            gridVisitingTeam.setItems(allTeamsName);
+        List<String> teamNamesByLeague = teamService.findTeamNamesByLeagueName(season.getLeagueName());
+        if (!CollectionUtils.isEmpty(teamNamesByLeague)) {
+            gridHomeTeam.setItems(teamNamesByLeague);
+            gridVisitingTeam.setItems(teamNamesByLeague);
         }
 
         ComboBox<String> gridLocation = new ComboBox<>();
@@ -167,6 +159,23 @@ public class GamesDialog extends Dialog {
                 .bind(Game::getGameResult, Game::setGameResult);
         gameResultColumn.setEditorComponent(gameResult);
 
+        grid.addColumn(
+                new ComponentRenderer<>(Button::new, (button, selectGame) -> {
+                    button.addThemeVariants(ButtonVariant.LUMO_ICON,
+                            ButtonVariant.LUMO_TERTIARY);
+                    button.addClickListener(e -> this.saveGame(selectGame));
+                    button.setIcon(new Icon(VaadinIcon.ADJUST));
+                })).setHeader("Save");
+
+        grid.addColumn(
+                new ComponentRenderer<>(Button::new, (button, selectGame) -> {
+                    button.addThemeVariants(ButtonVariant.LUMO_ICON,
+                            ButtonVariant.LUMO_ERROR,
+                            ButtonVariant.LUMO_TERTIARY);
+                    button.addClickListener(e -> this.removeGame(selectGame));
+                    button.setIcon(new Icon(VaadinIcon.TRASH));
+                })).setHeader("Remove");
+
 
         grid.addItemDoubleClickListener(e -> {
             editor.editItem(e.getItem());
@@ -179,6 +188,19 @@ public class GamesDialog extends Dialog {
         grid.setPageSize(5);
         updateGameGridList(season.getId());
 
+    }
+
+    private void removeGame(Game game) {
+        gameService.removeGame(game);
+        this.updateGameGridList(game.getSeasonId());
+    }
+
+    private void saveGame(Game game) {
+        String msg = gameService.saveGame(game);
+        if(StringUtils.isNotBlank(msg)){
+            new NotificationError(msg);
+        }
+        this.updateGameGridList(game.getSeasonId());
     }
 
     private void addLocations(List<String> locations, ComboBox<String> location, String teamName) {
@@ -205,17 +227,21 @@ public class GamesDialog extends Dialog {
     private VerticalLayout createDialogLayout(Season season) {
 
         homeTeamName.setRequired(true);
+        homeTeamName.setWidthFull();
         visitingTeamName.setRequired(true);
-        List<String> allTeamsName = teamService.findAllTeamsName();
-        if (!CollectionUtils.isEmpty(allTeamsName)) {
-            homeTeamName.setItems(allTeamsName);
-            visitingTeamName.setItems(allTeamsName);
+        visitingTeamName.setWidthFull();
+        List<String> teamNamesByLeague = teamService.findTeamNamesByLeagueName(season.getLeagueName());
+        if (!CollectionUtils.isEmpty(teamNamesByLeague)) {
+            homeTeamName.setItems(teamNamesByLeague);
+            visitingTeamName.setItems(teamNamesByLeague);
         }
         List<String> locations = new ArrayList<>();
         homeTeamName.addValueChangeListener(e -> this.addLocations(locations, location, e.getValue()));
         visitingTeamName.addValueChangeListener(e -> this.addLocations(locations, location, e.getValue()));
         location.setRequired(true);
+        location.setWidthFull();
         gameDate.setRequired(true);
+        gameDate.setWidthFull();
         gameDate.setMax(season.getEndDate());
         gameDate.setMin(season.getStartDate());
 

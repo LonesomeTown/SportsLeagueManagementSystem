@@ -8,6 +8,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -17,12 +18,15 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
 
+import java.util.List;
+
 /**
  * LeagueForm
  *
  * @author T.W 11/4/22
  */
 public class SeasonForm extends FormLayout {
+    ComboBox<String> leagueName = new ComboBox<>("League Name");
     DatePicker startDate = new DatePicker("Start Date");
     DatePicker endDate = new DatePicker("End Date");
     TextField gamesNum = new TextField("Numbers of Game");
@@ -36,9 +40,11 @@ public class SeasonForm extends FormLayout {
 
     Season season;
 
-    public SeasonForm() {
+    public SeasonForm(List<String> leaguesName) {
         addClassName("season-form");
 
+        leagueName.setRequired(true);
+        leagueName.setItems(leaguesName);
         startDate.setRequiredIndicatorVisible(true);
         startDate.setErrorMessage("This field is required");
         endDate.setRequiredIndicatorVisible(true);
@@ -50,7 +56,8 @@ public class SeasonForm extends FormLayout {
 
         binder.bindInstanceFields(this);
 
-        add(startDate,
+        add(leagueName,
+                startDate,
                 endDate,
                 gamesNum,
                 createButtonsLayout());

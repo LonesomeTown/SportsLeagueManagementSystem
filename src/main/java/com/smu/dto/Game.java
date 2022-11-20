@@ -1,7 +1,7 @@
 package com.smu.dto;
 
 
-import com.smu.GameResultEnum;
+import com.smu.constant.GameResultEnum;
 import lombok.Data;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.MongoId;

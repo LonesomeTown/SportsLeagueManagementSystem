@@ -1,6 +1,8 @@
 package com.smu.service.impl;
 
 import com.smu.dto.League;
+import com.smu.dto.Team;
+import com.smu.repository.GameRepository;
 import com.smu.repository.LeagueRepository;
 import com.smu.repository.TeamRepository;
 import com.smu.service.LeagueService;
@@ -18,10 +20,12 @@ import java.util.List;
 public class LeagueServiceImpl implements LeagueService {
     private final LeagueRepository leagueRepository;
     private final TeamRepository teamRepository;
+    private final GameRepository gameRepository;
 
-    public LeagueServiceImpl(LeagueRepository leagueRepository, TeamRepository teamRepository) {
+    public LeagueServiceImpl(LeagueRepository leagueRepository, TeamRepository teamRepository, GameRepository gameRepository) {
         this.leagueRepository = leagueRepository;
         this.teamRepository = teamRepository;
+        this.gameRepository = gameRepository;
     }
 
     @Override
@@ -46,5 +50,13 @@ public class LeagueServiceImpl implements LeagueService {
     @Override
     public void deleteLeague(League league) {
         leagueRepository.delete(league);
+    }
+
+    @Override
+    public Integer findSeasonNums(String leagueName) {
+        List<Team> teamsByLeagueName = teamRepository.findTeamsByLeagueName(leagueName);
+
+
+        return null;
     }
 }

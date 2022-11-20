@@ -31,4 +31,6 @@ public interface GameService {
      */
     String autoGenerateGamesBySeason(ObjectId seasonId);
 
+    void removeGame(Game game);
+
 }

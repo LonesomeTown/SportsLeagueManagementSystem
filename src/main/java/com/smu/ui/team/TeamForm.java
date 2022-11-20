@@ -62,6 +62,7 @@ public class TeamForm extends FormLayout {
                 city,
                 field,
                 leagueName,
+                rating,
                 createButtonsLayout());
     }
 

@@ -98,5 +98,10 @@ public class TeamServiceImpl implements TeamService {
         }
     }
 
+    @Override
+    public List<String> findTeamNamesByLeagueName(String leagueName) {
+        return this.teamRepository.findTeamsByLeagueName(leagueName).stream().map(Team::getName).collect(Collectors.toList());
+    }
+
 
 }

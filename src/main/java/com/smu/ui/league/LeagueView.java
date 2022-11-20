@@ -15,6 +15,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -175,8 +176,12 @@ public class LeagueView extends VerticalLayout {
         for (League allLeague : allLeagues) {
             LeagueVo leagueVo = new LeagueVo();
             BeanUtils.copyProperties(allLeague, leagueVo);
-            //TODO
-            leagueVo.setSeasonsNum(0);
+            List<Season> seasonsByLeagueName = seasonService.findSeasonsByLeagueName(allLeague.getName());
+            if (CollectionUtils.isEmpty(seasonsByLeagueName)) {
+                leagueVo.setSeasonsNum(0);
+            } else {
+                leagueVo.setSeasonsNum(seasonsByLeagueName.size());
+            }
             leagueVos.add(leagueVo);
         }
         grid.setItems(leagueVos);

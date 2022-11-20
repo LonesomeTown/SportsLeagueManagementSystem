@@ -18,6 +18,11 @@ public interface SeasonService {
      * @return {@link List}<{@link Season}>
      */
     List<Season> findSeasonsByStartDate(LocalDate startDate);
+
+    /**
+     * @return {@link List}<{@link Season}>
+     */
+    List<Season> findSeasonsByLeagueName(String leagueName);
     /**
      * @return {@link List}<{@link Team}>
      */
@@ -38,4 +43,5 @@ public interface SeasonService {
      * @return {@link Season}
      */
     Season findById(ObjectId id);
+
 }

@@ -17,4 +17,6 @@ public interface TeamRepository extends MongoRepository<Team, String> {
 
     List<Team> findTeamsByNameEquals(String name);
 
+    List<Team> findTeamsByLeagueName(String leagueName);
+
 }

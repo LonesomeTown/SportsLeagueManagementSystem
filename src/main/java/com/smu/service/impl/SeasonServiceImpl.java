@@ -3,6 +3,7 @@ package com.smu.service.impl;
 import com.smu.dto.Season;
 import com.smu.repository.SeasonRepository;
 import com.smu.service.SeasonService;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -34,6 +35,15 @@ public class SeasonServiceImpl implements SeasonService {
             Season seasonByStartDateEquals = seasonRepository.findSeasonByStartDateEquals(startDate);
             seasons.add(seasonByStartDateEquals);
             return seasons;
+        }
+    }
+
+    @Override
+    public List<Season> findSeasonsByLeagueName(String leagueName) {
+        if(StringUtils.isEmpty(leagueName)){
+            return this.findAllSeasons();
+        }else {
+            return this.seasonRepository.findSeasonByLeagueNameContains(leagueName);
         }
     }
 

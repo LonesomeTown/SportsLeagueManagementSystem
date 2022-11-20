@@ -32,4 +32,10 @@ public interface LeagueService {
      * @param league league
      */
     void deleteLeague(League league);
+
+    /**
+     * @param leagueName leagueName
+     * @return {@link Integer}
+     */
+    Integer findSeasonNums(String leagueName);
 }
