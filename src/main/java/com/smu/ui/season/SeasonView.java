@@ -14,10 +14,10 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.apache.commons.lang3.StringUtils;
@@ -30,7 +30,8 @@ import java.util.stream.Collectors;
 @PageTitle("League | Project Group8")
 public class SeasonView extends VerticalLayout {
     Grid<Season> grid = new Grid<>(Season.class);
-    ComboBox<String> textField = new ComboBox();
+    ComboBox<String> comboBox = new ComboBox<>();
+    DatePicker datePicker = new DatePicker();
     SeasonForm form;
     GamesDialog dialog;
     private final LeagueService leagueService;
@@ -71,15 +72,21 @@ public class SeasonView extends VerticalLayout {
 
     private HorizontalLayout getToolbar() {
         List<League> allLeagues = leagueService.findAllLeagues("");
-        textField.setItems(allLeagues.stream().map(League::getName).collect(Collectors.toList()));
-        textField.setPlaceholder("Filter by league name...");
-        textField.setClearButtonVisible(true);
-        textField.addValueChangeListener(e -> updateList());
+        comboBox.setItems(allLeagues.stream().map(League::getName).collect(Collectors.toList()));
+        comboBox.setPlaceholder("Filter by league name...");
+        comboBox.setClearButtonVisible(true);
+        comboBox.addValueChangeListener(e -> updateList());
 
         Button addSeasonButton = new Button("Add season");
         addSeasonButton.addClickListener(click -> addSeason());
 
-        HorizontalLayout toolbar = new HorizontalLayout(textField, addSeasonButton);
+        datePicker.setPlaceholder("Current date");
+        datePicker.setClearButtonVisible(true);
+
+        Button setCurrentDateButton = new Button("Set as current date");
+        setCurrentDateButton.addClickListener(click -> this.updateCurrentDate());
+
+        HorizontalLayout toolbar = new HorizontalLayout(comboBox, addSeasonButton, datePicker, setCurrentDateButton);
         toolbar.addClassName("toolbar");
         return toolbar;
     }
@@ -138,7 +145,7 @@ public class SeasonView extends VerticalLayout {
     private void addSeason() {
         grid.asSingleSelect().clear();
         Season season = new Season();
-        season.setLeagueName(textField.getValue());
+        season.setLeagueName(comboBox.getValue());
         editSeason(season);
     }
 
@@ -179,6 +186,10 @@ public class SeasonView extends VerticalLayout {
     }
 
     private void updateList() {
-        grid.setItems(seasonService.findSeasonsByLeagueName(textField.getValue()));
+        grid.setItems(seasonService.findSeasonsByLeagueName(comboBox.getValue()));
+    }
+
+    private void updateCurrentDate() {
+
     }
 }

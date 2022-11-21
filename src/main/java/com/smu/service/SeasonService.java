@@ -44,4 +44,6 @@ public interface SeasonService {
      */
     Season findById(ObjectId id);
 
+    Boolean updateCurrentDate(LocalDate localDate);
+
 }

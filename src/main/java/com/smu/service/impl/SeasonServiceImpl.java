@@ -88,4 +88,9 @@ public class SeasonServiceImpl implements SeasonService {
         Optional<Season> byId = seasonRepository.findById(id);
         return byId.orElseGet(Season::new);
     }
+
+    @Override
+    public Boolean updateCurrentDate(LocalDate localDate) {
+        return null;
+    }
 }
