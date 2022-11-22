@@ -1,6 +1,7 @@
 package com.smu.service;
 
 import com.smu.dto.Game;
+import com.smu.dto.TeamGameRecordVo;
 import org.bson.types.ObjectId;
 
 import java.util.List;
@@ -32,5 +33,7 @@ public interface GameService {
     String autoGenerateGamesBySeason(ObjectId seasonId);
 
     void removeGame(Game game);
+
+    List<TeamGameRecordVo> findGameRecordsByTeam(String teamName);
 
 }

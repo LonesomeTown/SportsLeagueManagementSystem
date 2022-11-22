@@ -2,11 +2,9 @@ package com.smu.ui.season;
 
 import com.smu.dto.Game;
 import com.smu.dto.League;
+import com.smu.dto.ScoringCriteria;
 import com.smu.dto.Season;
-import com.smu.service.GameService;
-import com.smu.service.LeagueService;
-import com.smu.service.SeasonService;
-import com.smu.service.TeamService;
+import com.smu.service.*;
 import com.smu.ui.MainLayout;
 import com.smu.ui.NotificationError;
 import com.smu.ui.NotificationSuccess;
@@ -33,17 +31,20 @@ public class SeasonView extends VerticalLayout {
     ComboBox<String> comboBox = new ComboBox<>();
     DatePicker datePicker = new DatePicker();
     SeasonForm form;
-    GamesDialog dialog;
+    GamesDialog gameDialog;
+    ScoringCriteriaDialog scoringCriteriaDialog;
     private final LeagueService leagueService;
     private final SeasonService seasonService;
     private final GameService gameService;
     private final TeamService teamService;
+    private final ScoringCriteriaService scoringCriteriaService;
 
-    public SeasonView(LeagueService leagueService, SeasonService seasonService, GameService gameService, TeamService teamService) {
+    public SeasonView(LeagueService leagueService, SeasonService seasonService, GameService gameService, TeamService teamService, ScoringCriteriaService scoringCriteriaService) {
         this.leagueService = leagueService;
         this.seasonService = seasonService;
         this.gameService = gameService;
         this.teamService = teamService;
+        this.scoringCriteriaService = scoringCriteriaService;
         addClassName("team-view");
         setSizeFull();
         configureGrid();
@@ -61,6 +62,7 @@ public class SeasonView extends VerticalLayout {
         grid.addColumn(Season::getEndDate).setHeader("End Date");
         grid.addColumn(Season::getGamesNum).setHeader("Numbers of Game");
         grid.addComponentColumn(t -> createInlineButtonComponent(t.getId()));
+        grid.addComponentColumn(t -> createSecondInlineButtonComponent(t.getId()));
 
         grid.setDetailsVisibleOnClick(false);
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
@@ -104,17 +106,33 @@ public class SeasonView extends VerticalLayout {
         Button tertiaryInlineButton = new Button("Game Details");
         tertiaryInlineButton
                 .addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-        tertiaryInlineButton.addClickListener(e -> configureDialog(seasonId));
+        tertiaryInlineButton.addClickListener(e -> configureGameDialog(seasonId));
         return tertiaryInlineButton;
     }
 
-    private void configureDialog(ObjectId seasonId) {
+    private Button createSecondInlineButtonComponent(ObjectId seasonId) {
+        Button tertiaryInlineButton = new Button("Scoring Criteria");
+        tertiaryInlineButton
+                .addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+        tertiaryInlineButton.addClickListener(e -> configureScoringDialog(seasonId));
+        return tertiaryInlineButton;
+    }
+
+    private void configureGameDialog(ObjectId seasonId) {
         Season season = seasonService.findById(seasonId);
-        dialog = new GamesDialog(season, gameService, teamService);
-        dialog.addListener(GamesDialog.SaveEvent.class, e -> saveGames(e, season.getId()));
-        dialog.addListener(GamesDialog.CloseEvent.class, e -> closeGameDialog());
-        dialog.addListener(GamesDialog.GenerateEvent.class, e -> autoGenerateGames(season.getId()));
-        dialog.open();
+        gameDialog = new GamesDialog(season, gameService, teamService);
+        gameDialog.addListener(GamesDialog.SaveEvent.class, e -> saveGames(e, season.getId()));
+        gameDialog.addListener(GamesDialog.CloseEvent.class, e -> closeGameDialog());
+        gameDialog.addListener(GamesDialog.GenerateEvent.class, e -> autoGenerateGames(season.getId()));
+        gameDialog.open();
+    }
+
+    private void configureScoringDialog(ObjectId seasonId) {
+        ScoringCriteria scoringCriteria = scoringCriteriaService.findBySeasonId(seasonId);
+        scoringCriteriaDialog = new ScoringCriteriaDialog(scoringCriteria);
+        scoringCriteriaDialog.addListener(ScoringCriteriaDialog.SaveEvent.class, e -> saveScoringCriteria(e, seasonId));
+        scoringCriteriaDialog.addListener(ScoringCriteriaDialog.CloseEvent.class, e -> closeScoringDialog());
+        scoringCriteriaDialog.open();
     }
 
     private void configureForm() {
@@ -167,22 +185,35 @@ public class SeasonView extends VerticalLayout {
     private void saveGames(GamesDialog.SaveEvent event, ObjectId seasonId) {
         Game game = event.getGame();
         game.setSeasonId(seasonId);
-        dialog.setGame(game);
+        gameDialog.setGame(game);
         String msg = gameService.saveGame(game);
         if (StringUtils.isNotBlank(msg)) {
             new NotificationError(msg);
         }
-        dialog.updateGameGridList(seasonId);
+        gameDialog.updateGameGridList(seasonId);
+    }
+
+    private void saveScoringCriteria(ScoringCriteriaDialog.SaveEvent event, ObjectId seasonId) {
+        ScoringCriteria scoringCriteria = event.getScoringCriteria();
+        scoringCriteria.setSeasonId(seasonId);
+        scoringCriteriaDialog.setScoringCriteria(scoringCriteria);
+        scoringCriteriaService.save(scoringCriteria);
+        new NotificationSuccess("Saved Successfully");
+        closeScoringDialog();
     }
 
     private void autoGenerateGames(ObjectId seasonId) {
         gameService.autoGenerateGamesBySeason(seasonId);
-        dialog.updateGameGridList(seasonId);
-        new NotificationSuccess("Generate Successfully!");
+        gameDialog.updateGameGridList(seasonId);
+        new NotificationSuccess("Generated Successfully!");
     }
 
     private void closeGameDialog() {
-        dialog.close();
+        gameDialog.close();
+    }
+
+    private void closeScoringDialog() {
+        scoringCriteriaDialog.close();
     }
 
     private void updateList() {

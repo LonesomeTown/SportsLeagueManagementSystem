@@ -14,23 +14,36 @@ import java.util.List;
  */
 public interface GameRepository extends MongoRepository<Game, String> {
 
-    /** Find the game by the teams that played the game
-     *  @param homeTeamName
-     *  @param visitingTeamName
-     *  @return: a list of games that were played between the two teams
-     *           including the details of each game
+    /**
+     * Find the game by the teams that played the game
+     *
+     * @param homeTeamName
+     * @param visitingTeamName
+     * @return: a list of games that were played between the two teams
+     * including the details of each game
      */
     List<Game> findGameByHomeTeamNameEqualsAndVisitingTeamNameEquals(String homeTeamName, String visitingTeamName);
 
-    /** Find all games within the same season
-     *  @param seasonId: the object id of the season input
-     *  @return: a list of games that are scheduled in the same season
+    /**
+     * Find all games within the same season
+     *
+     * @param seasonId: the object id of the season input
+     * @return: a list of games that are scheduled in the same season
      */
     List<Game> findGameBySeasonIdEquals(ObjectId seasonId);
 
-    /** Find all games held on the game date input
-     *  @param gameDate
-     *  @return: all the games that were held on the game date specified
+    /**
+     * Find all games held on the game date input
+     *
+     * @param gameDate
+     * @return: all the games that were held on the game date specified
      */
     List<Game> findGameByGameDateEqualsAndHomeTeamNameEqualsAndVisitingTeamNameEquals(LocalDate gameDate, String homeTeamName, String visitingTeamName);
+
+    /**
+     * @param teamName1 teamName1
+     * @param teamName2 teamName2
+     * @return {@link List}<{@link Game}>
+     */
+    List<Game> findGamesByHomeTeamNameOrVisitingTeamName(String teamName1,String teamName2);
 }

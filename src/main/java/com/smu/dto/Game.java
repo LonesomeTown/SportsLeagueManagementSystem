@@ -34,5 +34,5 @@ public class Game implements Serializable {
     private LocalDate gameDate;
     private Double homeScore;
     private Double visitingScore;
-    private GameResultEnum gameResult;
+    private String gameResult;
 }

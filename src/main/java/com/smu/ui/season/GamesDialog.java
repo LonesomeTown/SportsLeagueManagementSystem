@@ -6,6 +6,7 @@ import com.smu.dto.Season;
 import com.smu.service.GameService;
 import com.smu.service.TeamService;
 import com.smu.ui.NotificationError;
+import com.smu.ui.NotificationSuccess;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -20,6 +21,8 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
@@ -63,7 +66,7 @@ public class GamesDialog extends Dialog {
 
         Dialog dialog = new Dialog();
 
-        addClassName("initialize-dialog");
+        addClassName("games-dialog");
 
         dialog.setHeaderTitle("Game Details");
 
@@ -82,8 +85,8 @@ public class GamesDialog extends Dialog {
         createButtonLayout(dialog);
 
         dialog.getFooter().add(generateButton);
-        dialog.getFooter().add(cancelButton);
         dialog.getFooter().add(saveButton);
+        dialog.getFooter().add(cancelButton);
 
         add(dialog);
 
@@ -106,8 +109,11 @@ public class GamesDialog extends Dialog {
         Grid.Column<Game> gameDateColumn = grid
                 .addColumn(Game::getGameDate).setHeader("Game Date")
                 .setAutoWidth(true).setFlexGrow(0);
-        Grid.Column<Game> gameResultColumn = grid
-                .addColumn(Game::getGameResult).setHeader("Game Result")
+        Grid.Column<Game> homeScoreColumn = grid
+                .addColumn(Game::getHomeScore).setHeader("Home Team Scores")
+                .setAutoWidth(true).setFlexGrow(0);
+        Grid.Column<Game> visitingScoreColumn = grid
+                .addColumn(Game::getVisitingScore).setHeader("Visiting Team Scores")
                 .setAutoWidth(true).setFlexGrow(0);
 
         Binder<Game> gridBinder = new Binder<>(Game.class);
@@ -152,12 +158,23 @@ public class GamesDialog extends Dialog {
                 .bind(Game::getGameDate, Game::setGameDate);
         gameDateColumn.setEditorComponent(gridGameDate);
 
-        ComboBox<GameResultEnum> gameResult = new ComboBox<>();
-        gameResult.setWidthFull();
-        gameResult.setItems(GameResultEnum.values());
-        gridBinder.forField(gameResult)
-                .bind(Game::getGameResult, Game::setGameResult);
-        gameResultColumn.setEditorComponent(gameResult);
+        NumberField homeScores = new NumberField();
+        homeScores.setWidthFull();
+        homeScores.setStep(1);
+        homeScores.setValue(0.0);
+        homeScores.setHasControls(true);
+        gridBinder.forField(homeScores)
+                .bind(Game::getHomeScore, Game::setHomeScore);
+        homeScoreColumn.setEditorComponent(homeScores);
+
+        NumberField visitingScores = new NumberField();
+        visitingScores.setWidthFull();
+        visitingScores.setStep(1);
+        visitingScores.setValue(0.0);
+        visitingScores.setHasControls(true);
+        gridBinder.forField(visitingScores)
+                .bind(Game::getVisitingScore, Game::setVisitingScore);
+        visitingScoreColumn.setEditorComponent(visitingScores);
 
         grid.addColumn(
                 new ComponentRenderer<>(Button::new, (button, selectGame) -> {
@@ -178,6 +195,7 @@ public class GamesDialog extends Dialog {
 
 
         grid.addItemDoubleClickListener(e -> {
+            grid.getDataCommunicator().getKeyMapper().key(e.getItem());
             editor.editItem(e.getItem());
             Component editorComponent = e.getColumn().getEditorComponent();
             if (editorComponent instanceof Focusable) {
@@ -192,13 +210,16 @@ public class GamesDialog extends Dialog {
 
     private void removeGame(Game game) {
         gameService.removeGame(game);
+        new NotificationSuccess("Remove successfully!");
         this.updateGameGridList(game.getSeasonId());
     }
 
     private void saveGame(Game game) {
         String msg = gameService.saveGame(game);
-        if(StringUtils.isNotBlank(msg)){
+        if (StringUtils.isNotBlank(msg)) {
             new NotificationError(msg);
+        }else {
+            new NotificationSuccess("Save successfully!");
         }
         this.updateGameGridList(game.getSeasonId());
     }
@@ -262,13 +283,11 @@ public class GamesDialog extends Dialog {
     }
 
     private void createButtonLayout(Dialog dialog) {
-        generateButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        generateButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         generateButton.addClickListener(event -> fireEvent(new GenerateEvent(this, game)));
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         saveButton.addClickShortcut(Key.ENTER);
-        saveButton.addClickListener(event -> {
-            validateAndSave();
-        });
+        saveButton.addClickListener(event -> validateAndSave());
         cancelButton.addClickListener(event -> {
             fireEvent(new CloseEvent(this));
             dialog.close();
