@@ -88,7 +88,7 @@ public class TeamServiceImpl implements TeamService {
         // Compare the date with season schedule
         // Violation case:
         //    seasonStart -- current -- seasonEnd
-        List<Season> seasonsByStartDateBeforeAndEndDateAfter = seasonRepository.findSeasonByStartDateBeforeAndEndDateAfter(current, current);
+        List<Season> seasonsByStartDateBeforeAndEndDateAfter = seasonRepository.findSeasonByStartDateBeforeAndEndDateAfterAndLeagueName(current, current, leagueName);
         if (!seasonsByStartDateBeforeAndEndDateAfter.isEmpty()) {
             team.setLeagueName(leagueName);
             teamRepository.save(team);

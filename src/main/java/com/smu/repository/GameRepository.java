@@ -3,6 +3,7 @@ package com.smu.repository;
 import com.smu.dto.Game;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -45,5 +46,13 @@ public interface GameRepository extends MongoRepository<Game, String> {
      * @param teamName2 teamName2
      * @return {@link List}<{@link Game}>
      */
-    List<Game> findGamesByHomeTeamNameOrVisitingTeamName(String teamName1,String teamName2);
+    List<Game> findGamesByHomeTeamNameOrVisitingTeamName(String teamName1, String teamName2);
+
+    /**
+     * @param homeTeamName
+     * @param visitingName
+     * @return {@link List}<{@link Game}>
+     */
+//    @Query(value = "{'$and':['$or':[{'homeTeamName':?0},'{visitingTeamName':?1}],'seasonId':{'$oid':?2}]}")
+    List<Game> findGamesByHomeTeamNameAndSeasonIdOrVisitingTeamNameAndSeasonId(String homeTeamName, ObjectId seasonId1, String visitingName, ObjectId seasonId2);
 }

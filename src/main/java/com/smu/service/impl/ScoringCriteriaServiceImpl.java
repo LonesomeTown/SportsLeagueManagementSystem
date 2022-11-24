@@ -26,6 +26,10 @@ public class ScoringCriteriaServiceImpl implements ScoringCriteriaService {
 
     @Override
     public void save(ScoringCriteria scoringCriteria) {
-         scoringCriteriaRepository.save(scoringCriteria);
+        ScoringCriteria bySeasonId = scoringCriteriaRepository.findBySeasonId(scoringCriteria.getSeasonId());
+        if (null != bySeasonId) {
+            scoringCriteria.setId(bySeasonId.getId());
+        }
+        scoringCriteriaRepository.save(scoringCriteria);
     }
 }

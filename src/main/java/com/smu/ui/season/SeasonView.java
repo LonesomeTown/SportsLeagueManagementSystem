@@ -8,6 +8,7 @@ import com.smu.service.*;
 import com.smu.ui.MainLayout;
 import com.smu.ui.NotificationError;
 import com.smu.ui.NotificationSuccess;
+import com.smu.ui.game.GamesDialog;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;

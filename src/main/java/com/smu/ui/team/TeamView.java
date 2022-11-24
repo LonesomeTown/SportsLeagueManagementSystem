@@ -1,6 +1,5 @@
 package com.smu.ui.team;
 
-import com.smu.dto.Game;
 import com.smu.dto.League;
 import com.smu.dto.Team;
 import com.smu.dto.TeamGameRecordVo;
@@ -71,7 +70,7 @@ public class TeamView extends VerticalLayout {
         lowerGrid.addColumn(TeamGameRecordVo::getNumsLoss).setHeader("Number of Loss");
         lowerGrid.addColumn(TeamGameRecordVo::getSumScores).setHeader("Sum Scores").setSortable(true);
         lowerGrid.addColumn(TeamGameRecordVo::getSumOpponentScores).setHeader("Sum Scores of Opponent Team").setSortable(true);
-        lowerGrid.addColumn(TeamGameRecordVo::getSumTotalScores).setHeader("Sum Total Scores").setSortable(true);
+        lowerGrid.addColumn(TeamGameRecordVo::getSumTotalPoints).setHeader("Sum Total Points").setSortable(true);
         lowerGrid.getColumns().forEach(col -> col.setAutoWidth(true));
         this.updateLowerGridList();
 

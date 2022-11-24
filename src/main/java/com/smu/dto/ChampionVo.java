@@ -10,7 +10,8 @@ import org.bson.types.ObjectId;
  */
 @Data
 public class ChampionVo {
-    private String teamName;
     private ObjectId seasonId;
+    private String teamName;
     private String seasonDuration;
+    private Double points;
 }

@@ -1,5 +1,6 @@
 package com.smu.service;
 
+import com.smu.dto.ChampionVo;
 import com.smu.dto.League;
 import org.springframework.stereotype.Service;
 
@@ -38,4 +39,10 @@ public interface LeagueService {
      * @return {@link Integer}
      */
     Integer findSeasonNums(String leagueName);
+
+    /**
+     * @param leagueName leagueName
+     * @return {@link ChampionVo}
+     */
+    List<ChampionVo> findChampions(String leagueName);
 }

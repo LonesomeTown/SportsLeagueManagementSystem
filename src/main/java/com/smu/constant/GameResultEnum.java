@@ -11,16 +11,16 @@ public enum GameResultEnum {
     DRAWN(0, "Drawn"),
     LOST(-1, "Home Team Lost");
 
-    private final int code;
+    private final int points;
     private final String description;
 
     GameResultEnum(int code, String description) {
-        this.code = code;
+        this.points = code;
         this.description = description;
     }
 
-    public int getCode() {
-        return code;
+    public int getPoints() {
+        return points;
     }
 
     public String getDescription() {

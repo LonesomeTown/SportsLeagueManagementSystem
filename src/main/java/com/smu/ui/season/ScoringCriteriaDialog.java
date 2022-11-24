@@ -1,5 +1,6 @@
 package com.smu.ui.season;
 
+import com.smu.constant.GameResultEnum;
 import com.smu.dto.Game;
 import com.smu.dto.ScoringCriteria;
 import com.vaadin.flow.component.ComponentEvent;
@@ -55,13 +56,13 @@ public class ScoringCriteriaDialog extends Dialog {
 
     private VerticalLayout createDialogLayout(ScoringCriteria scoringCriteria) {
         wonPoints.setRequiredIndicatorVisible(true);
-        wonPoints.setValue(null == scoringCriteria ? 1 : scoringCriteria.getWonPoints());
+        wonPoints.setValue(null == scoringCriteria ? GameResultEnum.WON.getPoints() : scoringCriteria.getWonPoints());
         wonPoints.setWidthFull();
         drawnPoints.setRequiredIndicatorVisible(true);
-        drawnPoints.setValue(null == scoringCriteria ? 0 : scoringCriteria.getDrawnPoints());
+        drawnPoints.setValue(null == scoringCriteria ? GameResultEnum.DRAWN.getPoints() : scoringCriteria.getDrawnPoints());
         drawnPoints.setWidthFull();
         lostPoints.setRequiredIndicatorVisible(true);
-        lostPoints.setValue(null == scoringCriteria ? -1 : scoringCriteria.getLostPoints());
+        lostPoints.setValue(null == scoringCriteria ? GameResultEnum.LOST.getPoints() : scoringCriteria.getLostPoints());
         lostPoints.setWidthFull();
         binder.bindInstanceFields(this);
 
@@ -113,12 +114,6 @@ public class ScoringCriteriaDialog extends Dialog {
     public static class CloseEvent extends ScoringCriteriaDialogEvent {
         CloseEvent(ScoringCriteriaDialog source) {
             super(source, null);
-        }
-    }
-
-    public static class GenerateEvent extends GamesDialog.GameDialogEvent {
-        GenerateEvent(GamesDialog source, Game game) {
-            super(source, game);
         }
     }
 

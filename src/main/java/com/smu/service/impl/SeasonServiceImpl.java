@@ -40,9 +40,9 @@ public class SeasonServiceImpl implements SeasonService {
 
     @Override
     public List<Season> findSeasonsByLeagueName(String leagueName) {
-        if(StringUtils.isEmpty(leagueName)){
+        if (StringUtils.isEmpty(leagueName)) {
             return this.findAllSeasons();
-        }else {
+        } else {
             return this.seasonRepository.findSeasonByLeagueNameContains(leagueName);
         }
     }
@@ -57,11 +57,11 @@ public class SeasonServiceImpl implements SeasonService {
         LocalDate startDate = season.getStartDate();
         LocalDate endDate = season.getEndDate();
         // newStart -- oldStart -- newEnd
-        List<Season> startDateBetween = seasonRepository.findSeasonByStartDateBetween(startDate, endDate);
+        List<Season> startDateBetween = seasonRepository.findSeasonByStartDateBetweenAndLeagueName(startDate, endDate, season.getLeagueName());
         // newStart -- oldEnd -- newEnd
-        List<Season> endDateBetween = seasonRepository.findSeasonByEndDateBetween(startDate, endDate);
+        List<Season> endDateBetween = seasonRepository.findSeasonByEndDateBetweenAndLeagueName(startDate, endDate, season.getLeagueName());
         // oldStart -- newStart -- newEnd -- oldEnd
-        List<Season> startDateBeforeAndEndDateAfter = seasonRepository.findSeasonByStartDateBeforeAndEndDateAfter(startDate, endDate);
+        List<Season> startDateBeforeAndEndDateAfter = seasonRepository.findSeasonByStartDateBeforeAndEndDateAfterAndLeagueName(startDate, endDate, season.getLeagueName());
         // Season ID identifier
         ObjectId seasonId = season.getId();
         Season duplicateId = seasonRepository.findSeasonByIdEquals(seasonId);

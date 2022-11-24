@@ -2,10 +2,12 @@ package com.smu.service.impl;
 
 import com.smu.constant.GameResultEnum;
 import com.smu.dto.Game;
+import com.smu.dto.ScoringCriteria;
 import com.smu.dto.Season;
 import com.smu.dto.TeamGameRecordVo;
 import com.smu.repository.GameRepository;
 import com.smu.service.GameService;
+import com.smu.service.ScoringCriteriaService;
 import com.smu.service.SeasonService;
 import com.smu.service.TeamService;
 import org.bson.types.ObjectId;
@@ -30,6 +32,7 @@ public class GameServiceImpl implements GameService {
     private final GameRepository gameRepository;
     private final SeasonService seasonService;
     private final TeamService teamService;
+    private final ScoringCriteriaService scoringCriteriaService;
 
     private Random random;
 
@@ -41,10 +44,11 @@ public class GameServiceImpl implements GameService {
         }
     }
 
-    public GameServiceImpl(GameRepository gameRepository, SeasonService seasonService, TeamService teamService) {
+    public GameServiceImpl(GameRepository gameRepository, SeasonService seasonService, TeamService teamService, ScoringCriteriaService scoringCriteriaService) {
         this.gameRepository = gameRepository;
         this.seasonService = seasonService;
         this.teamService = teamService;
+        this.scoringCriteriaService = scoringCriteriaService;
     }
 
     @Override
@@ -55,6 +59,11 @@ public class GameServiceImpl implements GameService {
     @Override
     public List<Game> findGamesBySeason(ObjectId seasonId) {
         return gameRepository.findGameBySeasonIdEquals(seasonId);
+    }
+
+    @Override
+    public List<Game> findGamesBySeasonAndTeam(ObjectId seasonId, String teamName) {
+        return gameRepository.findGamesByHomeTeamNameAndSeasonIdOrVisitingTeamNameAndSeasonId(teamName, seasonId, teamName, seasonId);
     }
 
     @Override
@@ -144,28 +153,63 @@ public class GameServiceImpl implements GameService {
         if (CollectionUtils.isEmpty(games)) {
             return results;
         }
+        //filter all games of 'teamName' and group by season
         Map<ObjectId, List<Game>> gamesGroupBySeason = games.stream().collect(Collectors.groupingBy(Game::getSeasonId));
         for (Map.Entry<ObjectId, List<Game>> objectIdListEntry : gamesGroupBySeason.entrySet()) {
-            TeamGameRecordVo recordVo = new TeamGameRecordVo();
-            ObjectId seasonId = objectIdListEntry.getKey();
-            List<Game> gamesBySeason = objectIdListEntry.getValue();
-            recordVo.setSeasonId(seasonId);
-            recordVo.setGamesPlayed((long) gamesBySeason.size());
-            Season season = seasonService.findById(seasonId);
-            recordVo.setSeasonDuration(season.getStartDate().format(DateTimeFormatter.BASIC_ISO_DATE) + "~" + season.getEndDate().format(DateTimeFormatter.BASIC_ISO_DATE));
-            List<Game> wonGames = gamesBySeason.stream().filter(game -> teamName.equals(game.getGameResult())).collect(Collectors.toList());
-            recordVo.setNumsWon((long) wonGames.size());
-            List<Game> lossGames = gamesBySeason.stream().filter(game -> null != game.getGameResult() && teamName.equals(game.getGameResult()) && GameResultEnum.DRAWN.name().equals(game.getGameResult())).collect(Collectors.toList());
-            recordVo.setNumsLoss((long) lossGames.size());
-            double sumHomeScore = gamesBySeason.stream().mapToDouble(Game::getHomeScore).sum();
-            recordVo.setSumScores(sumHomeScore);
-            double sumVisitingScore = gamesBySeason.stream().mapToDouble(Game::getVisitingScore).sum();
-            recordVo.setSumOpponentScores(sumVisitingScore);
-            recordVo.setSumTotalScores(recordVo.getSumScores() + recordVo.getSumOpponentScores());
-            results.add(recordVo);
+            //calculate the scores and points of each season
+            TeamGameRecordVo recordVo = findGameRecordsByTeamInSeason(teamName, objectIdListEntry.getKey(), objectIdListEntry.getValue());
+            if (null != recordVo) {
+                results.add(recordVo);
+            }
         }
         return results;
     }
+
+    @Override
+    public TeamGameRecordVo findGameRecordsByTeamInSeason(String teamName, ObjectId seasonId, List<Game> gamesInSeason) {
+        gamesInSeason.removeIf(game -> null == game.getHomeScore() || null == game.getVisitingScore());
+        if (CollectionUtils.isEmpty(gamesInSeason)) {
+            return null;
+        }
+        //calculate the scores and points of each season
+        TeamGameRecordVo recordVo = new TeamGameRecordVo();
+        recordVo.setTeamName(teamName);
+        //find the games that have played in this season
+        long gamePlayed = gamesInSeason.size();
+        recordVo.setSeasonId(seasonId);
+        recordVo.setGamesPlayed(gamePlayed);
+        //find the season duration
+        Season season = seasonService.findById(seasonId);
+        recordVo.setSeasonDuration(season.getStartDate().format(DateTimeFormatter.BASIC_ISO_DATE) + "~" + season.getEndDate().format(DateTimeFormatter.BASIC_ISO_DATE));
+        //find the games records of this team which is as a home team in this season and calculate the score
+        List<Game> asHomeTeam = gamesInSeason.stream().filter(game -> teamName.equals(game.getHomeTeamName())).collect(Collectors.toList());
+        double sumHomeScore = asHomeTeam.stream().mapToDouble(Game::getHomeScore).sum();
+        double sumOpponentVisitingScore = asHomeTeam.stream().mapToDouble(Game::getVisitingScore).sum();
+        //find the games records of this team which is as a visiting team in this season and calculate the score
+        List<Game> asVisitingTeam = gamesInSeason.stream().filter(game -> teamName.equals(game.getVisitingTeamName())).collect(Collectors.toList());
+        double sumVisitingScore = asVisitingTeam.stream().mapToDouble(Game::getVisitingScore).sum();
+        double sumOpponentHomeScore = asVisitingTeam.stream().mapToDouble(Game::getHomeScore).sum();
+        //the sum scores will be the score of the team as a home team + the score of the team as a visiting team
+        recordVo.setSumScores(sumHomeScore + sumVisitingScore);
+        //the opponentScores is the same thing
+        recordVo.setSumOpponentScores(sumOpponentVisitingScore + sumOpponentHomeScore);
+        //find the won games number of this team
+        long wonGamesNum = gamesInSeason.stream().filter(game -> teamName.equals(game.getGameResult())).count();
+        recordVo.setNumsWon(wonGamesNum);
+        //find the drawn games number of this team
+        long drawnGamesNum = gamesInSeason.stream().filter(game -> GameResultEnum.DRAWN.name().equals(game.getGameResult())).count();
+        //calculate the loss games number of this team
+        long lossGamesNum = gamePlayed - wonGamesNum - drawnGamesNum;
+        recordVo.setNumsLoss(lossGamesNum);
+        //calculate the total points of this season by the scoring criteria
+        ScoringCriteria scoringCriteria = scoringCriteriaService.findBySeasonId(seasonId);
+        double wonPoints = null == scoringCriteria.getWonPoints() ? GameResultEnum.WON.getPoints() : scoringCriteria.getWonPoints();
+        double drawnPoints = null == scoringCriteria.getDrawnPoints() ? GameResultEnum.DRAWN.getPoints() : scoringCriteria.getDrawnPoints();
+        double lossPoints = null == scoringCriteria.getDrawnPoints() ? GameResultEnum.LOST.getPoints() : scoringCriteria.getLostPoints();
+        recordVo.setSumTotalPoints(wonPoints * wonGamesNum + drawnPoints * drawnGamesNum + lossPoints * lossGamesNum);
+        return recordVo;
+    }
+
 
     private boolean ifDuplicateGameInfo(Game game) {
         List<Game> duplicateHomeAndVisitTeams = gameRepository.findGameByGameDateEqualsAndHomeTeamNameEqualsAndVisitingTeamNameEquals(

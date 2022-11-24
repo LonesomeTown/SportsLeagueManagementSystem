@@ -1,6 +1,5 @@
-package com.smu.ui.season;
+package com.smu.ui.game;
 
-import com.smu.constant.GameResultEnum;
 import com.smu.dto.Game;
 import com.smu.dto.Season;
 import com.smu.service.GameService;
@@ -22,7 +21,6 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
@@ -80,9 +78,17 @@ public class GamesDialog extends Dialog {
         dialog.add(dialogLayout);
 
         dialog.setModal(false);
-        dialog.setWidth("50%");
+        dialog.setWidth("60%");
 
         createButtonLayout(dialog);
+
+        Button closeButton = new Button(new Icon("lumo", "cross"),
+                e -> {
+                    fireEvent(new CloseEvent(this));
+                    dialog.close();
+                });
+        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        dialog.getHeader().add(closeButton);
 
         dialog.getFooter().add(generateButton);
         dialog.getFooter().add(saveButton);
@@ -179,10 +185,11 @@ public class GamesDialog extends Dialog {
         grid.addColumn(
                 new ComponentRenderer<>(Button::new, (button, selectGame) -> {
                     button.addThemeVariants(ButtonVariant.LUMO_ICON,
+                            ButtonVariant.LUMO_SUCCESS,
                             ButtonVariant.LUMO_TERTIARY);
                     button.addClickListener(e -> this.saveGame(selectGame));
-                    button.setIcon(new Icon(VaadinIcon.ADJUST));
-                })).setHeader("Save");
+                    button.setIcon(new Icon(VaadinIcon.CHECK));
+                }));
 
         grid.addColumn(
                 new ComponentRenderer<>(Button::new, (button, selectGame) -> {
@@ -191,7 +198,7 @@ public class GamesDialog extends Dialog {
                             ButtonVariant.LUMO_TERTIARY);
                     button.addClickListener(e -> this.removeGame(selectGame));
                     button.setIcon(new Icon(VaadinIcon.TRASH));
-                })).setHeader("Remove");
+                }));
 
 
         grid.addItemDoubleClickListener(e -> {
@@ -218,7 +225,7 @@ public class GamesDialog extends Dialog {
         String msg = gameService.saveGame(game);
         if (StringUtils.isNotBlank(msg)) {
             new NotificationError(msg);
-        }else {
+        } else {
             new NotificationSuccess("Save successfully!");
         }
         this.updateGameGridList(game.getSeasonId());

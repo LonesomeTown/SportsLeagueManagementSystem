@@ -1,12 +1,17 @@
 package com.smu.ui.league;
 
 import com.smu.dto.*;
+import com.smu.service.GameService;
 import com.smu.service.LeagueService;
 import com.smu.service.SeasonService;
 import com.smu.service.TeamService;
 import com.smu.ui.MainLayout;
+import com.smu.ui.game.GameRecordsDialog;
+import com.smu.ui.game.GamesDialog;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -14,47 +19,54 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import org.bson.types.ObjectId;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Route(value = "", layout = MainLayout.class)
 @PageTitle("League | Project Group8")
 public class LeagueView extends VerticalLayout {
-    Grid<LeagueVo> grid = new Grid<>(LeagueVo.class);
+    Grid<LeagueVo> upperGrid = new Grid<>(LeagueVo.class);
+    Grid<ChampionVo> lowerGrid = new Grid<>(ChampionVo.class, false);
     TextField filterText = new TextField();
+    ComboBox<String> leagueNameComboBox = new ComboBox<>();
     LeagueForm form;
     InitializeDialog dialog;
+    GameRecordsDialog gameDialog;
     LeagueService leagueService;
     TeamService teamService;
     SeasonService seasonService;
+    GameService gameService;
 
-    public LeagueView(LeagueService leagueService, TeamService teamService, SeasonService seasonService) {
+    public LeagueView(LeagueService leagueService, TeamService teamService, SeasonService seasonService, GameService gameService) {
         this.leagueService = leagueService;
         this.teamService = teamService;
         this.seasonService = seasonService;
+        this.gameService = gameService;
         addClassName("league-view");
         setSizeFull();
-        configureGrid();
+        configureUpperGrid();
         configureForm();
         closeEditor();
-        add(getToolbar(), getContent());
+        add(getUpperToolbar(), getContent(), getLowerToolbar(), configureLowerGrid());
 
     }
 
-    private void configureGrid() {
-        grid.addClassNames("league-grid");
-        grid.setSizeFull();
-        grid.setColumns("name");
-        grid.addColumn(LeagueVo::getCommissionerName).setHeader("Commissioner Name");
-        grid.addColumn(LeagueVo::getCommissionerSsn).setHeader("Commissioner SSN");
-        grid.addColumn(LeagueVo::getSeasonsNum).setHeader("Number of Seasons");
-        grid.getColumns().forEach(col -> col.setAutoWidth(true));
+    private void configureUpperGrid() {
+        upperGrid.addClassNames("league-grid");
+        upperGrid.setSizeFull();
+        upperGrid.setColumns("name");
+        upperGrid.addColumn(LeagueVo::getCommissionerName).setHeader("Commissioner Name");
+        upperGrid.addColumn(LeagueVo::getCommissionerSsn).setHeader("Commissioner SSN");
+        upperGrid.addColumn(LeagueVo::getSeasonsNum).setHeader("Number of Seasons");
+        upperGrid.getColumns().forEach(col -> col.setAutoWidth(true));
         this.updateList();
 
-        grid.asSingleSelect().addValueChangeListener(event -> {
+        upperGrid.asSingleSelect().addValueChangeListener(event -> {
                     League league = new League();
                     BeanUtils.copyProperties(event.getValue(), league);
                     editLeague(league);
@@ -62,7 +74,38 @@ public class LeagueView extends VerticalLayout {
         );
     }
 
-    private HorizontalLayout getToolbar() {
+    private HorizontalLayout configureLowerGrid() {
+        lowerGrid.addClassNames("league-lower-grid");
+        lowerGrid.setSizeFull();
+        lowerGrid.addColumn(ChampionVo::getTeamName).setHeader("Champion Team");
+        lowerGrid.addColumn(ChampionVo::getSeasonDuration).setHeader("Season Duration");
+        lowerGrid.addColumn(ChampionVo::getPoints).setHeader("Total Points");
+        lowerGrid.addComponentColumn(t -> createInlineButtonComponent(t.getSeasonId(), t.getTeamName()));
+        lowerGrid.getColumns().forEach(col -> col.setAutoWidth(true));
+        lowerGrid.setDetailsVisibleOnClick(false);
+        this.updateLowerGridList();
+
+        HorizontalLayout layout = new HorizontalLayout(lowerGrid);
+        layout.addClassNames("lower-content");
+        layout.setSizeFull();
+        return layout;
+    }
+
+    private Button createInlineButtonComponent(ObjectId seasonId, String teamName) {
+        Button tertiaryInlineButton = new Button("Game Records");
+        tertiaryInlineButton
+                .addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+        tertiaryInlineButton.addClickListener(e -> configureGameDialog(seasonId, teamName));
+        return tertiaryInlineButton;
+    }
+
+    private void configureGameDialog(ObjectId seasonId, String teamName) {
+        gameDialog = new GameRecordsDialog(gameService, seasonId, teamName);
+        gameDialog.open();
+    }
+
+
+    private HorizontalLayout getUpperToolbar() {
         filterText.setPlaceholder("Filter by name...");
         filterText.setClearButtonVisible(true);
         filterText.setValueChangeMode(ValueChangeMode.LAZY);
@@ -76,9 +119,21 @@ public class LeagueView extends VerticalLayout {
         return toolbar;
     }
 
+    private HorizontalLayout getLowerToolbar() {
+        List<League> allLeagues = leagueService.findAllLeagues("");
+        leagueNameComboBox.setItems(allLeagues.stream().map(League::getName).collect(Collectors.toList()));
+        leagueNameComboBox.setPlaceholder("Search champions...");
+        leagueNameComboBox.setClearButtonVisible(true);
+        leagueNameComboBox.addValueChangeListener(e -> this.updateLowerGridList());
+
+        HorizontalLayout toolbar = new HorizontalLayout(leagueNameComboBox);
+        toolbar.addClassName("lower-toolbar");
+        return toolbar;
+    }
+
     private Component getContent() {
-        HorizontalLayout content = new HorizontalLayout(grid, form);
-        content.setFlexGrow(2, grid);
+        HorizontalLayout content = new HorizontalLayout(upperGrid, form);
+        content.setFlexGrow(2, upperGrid);
         content.setFlexGrow(1, form);
         content.addClassNames("content");
         content.setSizeFull();
@@ -116,7 +171,7 @@ public class LeagueView extends VerticalLayout {
     }
 
     private void addLeague() {
-        grid.asSingleSelect().clear();
+        upperGrid.asSingleSelect().clear();
         League league = new League();
         league.setName(filterText.getValue());
         editLeague(league);
@@ -184,6 +239,10 @@ public class LeagueView extends VerticalLayout {
             }
             leagueVos.add(leagueVo);
         }
-        grid.setItems(leagueVos);
+        upperGrid.setItems(leagueVos);
+    }
+
+    private void updateLowerGridList() {
+        lowerGrid.setItems(leagueService.findChampions(leagueNameComboBox.getValue()));
     }
 }

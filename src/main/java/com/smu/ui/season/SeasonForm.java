@@ -12,6 +12,8 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
@@ -29,7 +31,7 @@ public class SeasonForm extends FormLayout {
     ComboBox<String> leagueName = new ComboBox<>("League Name");
     DatePicker startDate = new DatePicker("Start Date");
     DatePicker endDate = new DatePicker("End Date");
-    TextField gamesNum = new TextField("Numbers of Game");
+    IntegerField gamesNum = new IntegerField("Numbers of Game");
 
 
     Button save = new Button("Save");

@@ -10,6 +10,7 @@ import org.bson.types.ObjectId;
  */
 @Data
 public class TeamGameRecordVo {
+    private String teamName;
     private ObjectId seasonId;
     private String seasonDuration;
     private Long gamesPlayed;
@@ -17,5 +18,5 @@ public class TeamGameRecordVo {
     private Long numsLoss;
     private Double sumScores;
     private Double sumOpponentScores;
-    private Double sumTotalScores;
+    private Double sumTotalPoints;
 }
