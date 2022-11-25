@@ -1,5 +1,6 @@
 package com.smu.ui;
 
+import com.smu.ui.game.GameView;
 import com.smu.ui.league.LeagueView;
 import com.smu.ui.season.SeasonView;
 import com.smu.ui.team.TeamView;
@@ -42,13 +43,16 @@ public class MainLayout extends AppLayout {
         RouterLink teamLink = new RouterLink("Team Management", TeamView.class);
         teamLink.setHighlightCondition(HighlightConditions.sameLocation());
         RouterLink seasonLink = new RouterLink("Season Management", SeasonView.class);
-        teamLink.setHighlightCondition(HighlightConditions.sameLocation());
+        seasonLink.setHighlightCondition(HighlightConditions.sameLocation());
+        RouterLink gameLink = new RouterLink("Game Management", GameView.class);
+        gameLink.setHighlightCondition(HighlightConditions.sameLocation());
 
 
         addToDrawer(new VerticalLayout(
                 leagueLink,
                 teamLink,
                 seasonLink,
+                gameLink,
                 new RouterLink("Dashboard", DashboardView.class)
         ));
     }

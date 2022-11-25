@@ -3,10 +3,14 @@ package com.smu.ui.game;
 import com.smu.dto.Game;
 import com.smu.service.GameService;
 import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.shared.Registration;
 import org.bson.types.ObjectId;
 
 /**
@@ -35,9 +39,11 @@ public class GameRecordsDialog extends Dialog {
         grid.addColumn(Game::getVisitingScore).setHeader("Visiting Team Scores");
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
         this.updateList(seasonId, teamName);
+        grid.setPageSize(5);
 
         Div div = new Div();
         div.add(grid);
+        div.setSizeFull();
         dialog.add(div);
 
         Button closeButton = new Button("Close");
@@ -46,6 +52,8 @@ public class GameRecordsDialog extends Dialog {
             dialog.close();
         });
 
+        dialog.add(this.createDialogLayout());
+
         dialog.setModal(false);
         dialog.setWidth("50%");
         dialog.getFooter().add(closeButton);
@@ -53,6 +61,16 @@ public class GameRecordsDialog extends Dialog {
         add(dialog);
 
         dialog.open();
+    }
+
+    private VerticalLayout createDialogLayout(){
+        VerticalLayout dialogLayout = new VerticalLayout();
+        dialogLayout.setPadding(false);
+        dialogLayout.setSpacing(false);
+        dialogLayout.setSizeFull();
+        dialogLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
+        dialogLayout.getStyle().set("width", "650px").set("max-width", "100%");
+        return dialogLayout;
     }
 
     // Events
@@ -73,6 +91,12 @@ public class GameRecordsDialog extends Dialog {
         CloseEvent(GameRecordsDialog source) {
             super(source, null);
         }
+    }
+
+    @Override
+    public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
+                                                                  ComponentEventListener<T> listener) {
+        return getEventBus().addListener(eventType, listener);
     }
 
 

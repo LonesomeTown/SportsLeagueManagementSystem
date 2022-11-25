@@ -101,6 +101,7 @@ public class LeagueView extends VerticalLayout {
 
     private void configureGameDialog(ObjectId seasonId, String teamName) {
         gameDialog = new GameRecordsDialog(gameService, seasonId, teamName);
+        gameDialog.addListener(GameRecordsDialog.CloseEvent.class, e -> gameDialog.close());
         gameDialog.open();
     }
 
