@@ -30,7 +30,6 @@ public class GameRecordsDialog extends Dialog {
         dialog.setHeaderTitle("Game Records");
 
         grid.addClassNames("game-records-grid");
-        grid.setSizeFull();
         grid.addColumn(Game::getHomeTeamName).setHeader("Home Team");
         grid.addColumn(Game::getVisitingTeamName).setHeader("Visiting Team");
         grid.addColumn(Game::getGameDate).setHeader("Game Date");
@@ -43,8 +42,7 @@ public class GameRecordsDialog extends Dialog {
 
         Div div = new Div();
         div.add(grid);
-        div.setSizeFull();
-        dialog.add(div);
+
 
         Button closeButton = new Button("Close");
         closeButton.addClickListener(event -> {
@@ -55,6 +53,7 @@ public class GameRecordsDialog extends Dialog {
         dialog.add(this.createDialogLayout());
 
         dialog.setModal(false);
+        dialog.setResizable(true);
         dialog.setWidth("50%");
         dialog.getFooter().add(closeButton);
 
@@ -64,7 +63,7 @@ public class GameRecordsDialog extends Dialog {
     }
 
     private VerticalLayout createDialogLayout(){
-        VerticalLayout dialogLayout = new VerticalLayout();
+        VerticalLayout dialogLayout = new VerticalLayout(grid);
         dialogLayout.setPadding(false);
         dialogLayout.setSpacing(false);
         dialogLayout.setSizeFull();
