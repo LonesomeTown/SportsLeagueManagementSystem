@@ -4,6 +4,7 @@ import com.smu.dto.Game;
 import com.smu.dto.TeamGameRecordVo;
 import org.bson.types.ObjectId;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -52,6 +53,8 @@ public interface GameService {
      * @return {@link TeamGameRecordVo}
      */
     TeamGameRecordVo findGameRecordsByTeamInSeason(String teamName, ObjectId seasonId, List<Game> gamesInSeason);
+
+    String updateCurrentDate(LocalDate date);
 
 
 }

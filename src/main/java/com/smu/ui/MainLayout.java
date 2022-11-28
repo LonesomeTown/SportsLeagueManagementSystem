@@ -21,7 +21,7 @@ public class MainLayout extends AppLayout {
     }
 
     private void createHeader() {
-        H1 logo = new H1("League Management System - Group 8");
+        H1 logo = new H1("Sports League Management System - Group 8");
         logo.addClassNames("text-l", "m-m");
 
         HorizontalLayout header = new HorizontalLayout(

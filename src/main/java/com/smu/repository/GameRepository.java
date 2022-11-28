@@ -55,4 +55,6 @@ public interface GameRepository extends MongoRepository<Game, String> {
      */
 //    @Query(value = "{'$and':['$or':[{'homeTeamName':?0},'{visitingTeamName':?1}],'seasonId':{'$oid':?2}]}")
     List<Game> findGamesByHomeTeamNameAndSeasonIdOrVisitingTeamNameAndSeasonId(String homeTeamName, ObjectId seasonId1, String visitingName, ObjectId seasonId2);
+
+    List<Game> findGamesByGameDateBefore(LocalDate date);
 }

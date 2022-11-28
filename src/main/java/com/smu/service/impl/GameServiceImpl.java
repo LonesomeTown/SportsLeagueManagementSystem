@@ -1,11 +1,10 @@
 package com.smu.service.impl;
 
 import com.smu.constant.GameResultEnum;
-import com.smu.dto.Game;
-import com.smu.dto.ScoringCriteria;
-import com.smu.dto.Season;
-import com.smu.dto.TeamGameRecordVo;
+import com.smu.dto.*;
 import com.smu.repository.GameRepository;
+import com.smu.repository.LeagueRepository;
+import com.smu.repository.SeasonRepository;
 import com.smu.service.GameService;
 import com.smu.service.ScoringCriteriaService;
 import com.smu.service.SeasonService;
@@ -18,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,6 +33,8 @@ public class GameServiceImpl implements GameService {
     private final SeasonService seasonService;
     private final TeamService teamService;
     private final ScoringCriteriaService scoringCriteriaService;
+    private final SeasonRepository seasonRepository;
+    private final LeagueRepository leagueRepository;
 
     private Random random;
 
@@ -44,11 +46,13 @@ public class GameServiceImpl implements GameService {
         }
     }
 
-    public GameServiceImpl(GameRepository gameRepository, SeasonService seasonService, TeamService teamService, ScoringCriteriaService scoringCriteriaService) {
+    public GameServiceImpl(GameRepository gameRepository, SeasonService seasonService, TeamService teamService, ScoringCriteriaService scoringCriteriaService, SeasonRepository seasonRepository, LeagueRepository leagueRepository) {
         this.gameRepository = gameRepository;
         this.seasonService = seasonService;
         this.teamService = teamService;
         this.scoringCriteriaService = scoringCriteriaService;
+        this.seasonRepository = seasonRepository;
+        this.leagueRepository = leagueRepository;
     }
 
     @Override
@@ -121,7 +125,7 @@ public class GameServiceImpl implements GameService {
 
             //localDate date
             long seasonLength = season.getEndDate().toEpochDay() - season.getStartDate().toEpochDay();
-            long randomSpan = random.nextInt((int) seasonLength);
+            long randomSpan = random.nextInt(seasonLength == 0 ? 1 : (int) seasonLength);
             LocalDate gameDate = season.getStartDate().plusDays(randomSpan);
             //List<String> duplicateHomeAndVisitTeams = gameRepository.findGameByGameDateEqualsAndHomeTeamNameEqualsAndVisitingTeamNameEquals()
             game.setHomeTeamName(allTeamsName.get(randomHomeTeamNameIndex));
@@ -208,6 +212,61 @@ public class GameServiceImpl implements GameService {
         double lossPoints = null == scoringCriteria.getDrawnPoints() ? GameResultEnum.LOST.getPoints() : scoringCriteria.getLostPoints();
         recordVo.setSumTotalPoints(wonPoints * wonGamesNum + drawnPoints * drawnGamesNum + lossPoints * lossGamesNum);
         return recordVo;
+    }
+
+
+    @Override
+    public String updateCurrentDate(LocalDate currentDate) {
+        List<Season> all = seasonRepository.findAll();
+        all.sort(Comparator.comparing(Season::getEndDate).reversed());
+        Season latestSeason = all.get(0);
+        LocalDate latestDay = latestSeason.getEndDate();
+
+        if (currentDate.isAfter(latestDay)) {
+            //generate all the games result before current date
+            List<Game> gamesByGameDateBefore = gameRepository.findGamesByGameDateBefore(currentDate);
+            for (Game game : gamesByGameDateBefore) {
+                if (null == game.getHomeScore() || null == game.getVisitingScore()) {
+                    game.setHomeScore((double) random.nextInt(50));
+                    game.setVisitingScore((double) random.nextInt(50));
+                    gameRepository.save(game);
+                }
+            }
+
+            // Generate a season between today and the date set
+            Season season = new Season();
+            int gap = (int) latestDay.until(currentDate, ChronoUnit.DAYS);
+            season.setGamesNum(gap);
+            season.setStartDate(latestDay.plusDays(1));
+            List<String> leagueNames = leagueRepository.findAll().stream().map(League::getName).collect(Collectors.toList());
+            season.setLeagueName(leagueNames.get(0));
+            season.setEndDate(currentDate);
+            Integer num = season.getGamesNum();
+
+            // Save the season and check to assure tha the season schedule has no conflict with other seasons
+            if (!"".equals(seasonService.saveSeason(season))) {
+                updateCurrentDate(currentDate);
+            }
+
+            // Automatically generate games and load it to the season
+            while (num > 0) {
+                String autoGen = autoGenerateGamesBySeason(season.getId());
+                if ("".equals(autoGen)) {
+                    num--;
+                }
+            }
+
+            return "Automatically generate games and season!";
+        }
+        // If the set date is in the past
+        if (currentDate.isBefore(latestDay)) {
+            // Here would generate a list that contains all the seasons before the set date
+            List<Game> gameDateBefore = gameRepository.findGamesByGameDateBefore(currentDate);
+            // Return a season whose start date were before the set date
+            List<Season> seasonDateBefore = seasonRepository.findSeasonByStartDateBefore(currentDate);
+            return "";
+        }
+        return "";
     }
 
 

@@ -15,6 +15,7 @@ import com.vaadin.flow.component.charts.model.DataSeriesItem;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -73,13 +74,14 @@ public class DashboardView extends VerticalLayout {
         teamBox.addValueChangeListener(e -> this.updateGridList());
 
         grid.addClassNames("league-lower-grid");
-        grid.setSizeFull();
         grid.addColumn(TeamRatingVo::getTeamName).setHeader("Team");
         grid.addColumn(TeamRatingVo::getRating).setHeader("Rating");
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
         this.updateGridList();
 
-        VerticalLayout layout = new VerticalLayout(leagueBox, teamBox, grid);
+        HorizontalLayout horizontalLayout = new HorizontalLayout(leagueBox, teamBox);
+
+        VerticalLayout layout = new VerticalLayout(horizontalLayout, grid);
         layout.addClassNames("grid-content");
         layout.setSizeFull();
         return layout;

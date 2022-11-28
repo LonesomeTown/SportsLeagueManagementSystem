@@ -26,6 +26,7 @@ import org.bson.types.ObjectId;
 import org.springframework.util.CollectionUtils;
 
 import java.awt.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -352,6 +353,10 @@ public class SeasonView extends VerticalLayout {
     }
 
     private void updateCurrentDate() {
-
+        if (null != datePicker.getValue()) {
+            String msg = gameService.updateCurrentDate(datePicker.getValue());
+            new NotificationSuccess(msg);
+            updateList();
+        }
     }
 }
