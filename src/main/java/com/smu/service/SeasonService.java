@@ -46,4 +46,11 @@ public interface SeasonService {
 
     Boolean updateCurrentDate(LocalDate localDate);
 
+    /**
+     * @param currentDate currentDate
+     * @param leagueName leagueName
+     * @return {@link List}<{@link Season}>
+     */
+    Season findSeasonByCurrentDateAndLeague(LocalDate currentDate, String leagueName);
+
 }

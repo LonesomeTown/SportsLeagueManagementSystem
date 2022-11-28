@@ -53,4 +53,6 @@ public interface SeasonRepository extends MongoRepository<Season, ObjectId> {
 
     List<Season> findSeasonByLeagueNameContains(String leagueName);
 
+    Season findByStartDateBeforeAndEndDateAfterAndLeagueName(LocalDate startDate,LocalDate endDate, String leagueName);
+
 }

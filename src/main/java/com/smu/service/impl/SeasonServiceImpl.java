@@ -93,4 +93,9 @@ public class SeasonServiceImpl implements SeasonService {
     public Boolean updateCurrentDate(LocalDate localDate) {
         return null;
     }
+
+    @Override
+    public Season findSeasonByCurrentDateAndLeague(LocalDate currentDate, String leagueName) {
+        return seasonRepository.findByStartDateBeforeAndEndDateAfterAndLeagueName(currentDate, currentDate, leagueName);
+    }
 }
