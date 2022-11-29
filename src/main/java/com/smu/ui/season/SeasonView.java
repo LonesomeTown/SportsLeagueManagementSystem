@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 @Route(value = "season", layout = MainLayout.class)
 @PageTitle("League | Project Group8")
 public class SeasonView extends VerticalLayout {
-    Grid<Season> upperGrid = new Grid<>(Season.class);
+    Grid<Season> upperGrid = new Grid<>(Season.class, false);
     ComboBox<String> comboBox = new ComboBox<>();
     DatePicker datePicker = new DatePicker();
     SeasonForm form;
@@ -67,10 +67,10 @@ public class SeasonView extends VerticalLayout {
     private void configureGrid() {
         upperGrid.addClassNames("season-grid");
         upperGrid.setSizeFull();
-        upperGrid.setColumns("leagueName");
-        upperGrid.addColumn(Season::getStartDate).setHeader("Start Date");
-        upperGrid.addColumn(Season::getEndDate).setHeader("End Date");
-        upperGrid.addColumn(Season::getGamesNum).setHeader("Numbers of Game");
+        upperGrid.addColumn(Season::getLeagueName).setHeader("League Name");
+        upperGrid.addColumn(Season::getStartDate).setHeader("Start Date").setSortable(true);
+        upperGrid.addColumn(Season::getEndDate).setHeader("End Date").setSortable(true);
+        upperGrid.addColumn(Season::getGamesNum).setHeader("Numbers of Game").setSortable(true);
         upperGrid.addComponentColumn(t -> createInlineButtonComponent(t.getId()));
         upperGrid.addComponentColumn(t -> createSecondInlineButtonComponent(t.getId()));
         upperGrid.addComponentColumn(t -> createThirdInlineButtonComponent(t.getId()));

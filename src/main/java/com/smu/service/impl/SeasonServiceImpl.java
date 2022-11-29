@@ -43,7 +43,7 @@ public class SeasonServiceImpl implements SeasonService {
         if (StringUtils.isEmpty(leagueName)) {
             return this.findAllSeasons();
         } else {
-            return this.seasonRepository.findSeasonByLeagueNameContains(leagueName);
+            return this.seasonRepository.findSeasonByLeagueName(leagueName);
         }
     }
 

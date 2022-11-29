@@ -43,21 +43,22 @@ public class DashboardView extends VerticalLayout {
         addClassName("dashboard-view");
         setDefaultHorizontalComponentAlignment(Alignment.CENTER);
 
-        add(getContactStats(), getCompaniesChart(), configureGrid());
+        add(getLeagueStats(), getLeagueChart(), configureGrid());
     }
 
-    private Component getContactStats() {
-        Span stats = new Span(teamService.findAllTeamsName().size() + " Teams");
+    private Component getLeagueStats() {
+        List<League> allLeagues = leagueService.findAllLeagues("");
+        Span stats = new Span(allLeagues.size() + " Leagues");
         stats.addClassNames("text-xl", "mt-m");
         return stats;
     }
 
-    private Chart getCompaniesChart() {
+    private Chart getLeagueChart() {
         Chart chart = new Chart(ChartType.PIE);
 
         DataSeries dataSeries = new DataSeries();
-        teamService.findAllTeams("").forEach(team ->
-                dataSeries.add(new DataSeriesItem(team.getLeagueName(), 0)));
+        leagueService.findAllLeagues("").forEach(league ->
+                dataSeries.add(new DataSeriesItem(league.getName(), teamService.findTeamNamesByLeagueName(league.getName()).size())));
         chart.getConfiguration().setSeries(dataSeries);
         return chart;
     }

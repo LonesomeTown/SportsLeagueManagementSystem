@@ -127,13 +127,12 @@ public class GameServiceImpl implements GameService {
             long seasonLength = season.getEndDate().toEpochDay() - season.getStartDate().toEpochDay();
             long randomSpan = random.nextInt(seasonLength == 0 ? 1 : (int) seasonLength);
             LocalDate gameDate = season.getStartDate().plusDays(randomSpan);
-            //List<String> duplicateHomeAndVisitTeams = gameRepository.findGameByGameDateEqualsAndHomeTeamNameEqualsAndVisitingTeamNameEquals()
             game.setHomeTeamName(allTeamsName.get(randomHomeTeamNameIndex));
             game.setVisitingTeamName(allTeamsName.get(randomVisitingTeamNameIndex));
             game.setLocation(field);
             game.setGameDate(gameDate);
             if (this.ifDuplicateGameInfo(game)) {
-                return "[Failed] Auto-generated game conflict detected!";
+                continue;
             }
             games.add(game);
         }
@@ -276,10 +275,16 @@ public class GameServiceImpl implements GameService {
                 game.getHomeTeamName(),
                 game.getVisitingTeamName()
         );
+        List<Game> duplicateHomeAndVisitTeamsReversed = gameRepository.findGameByGameDateEqualsAndHomeTeamNameEqualsAndVisitingTeamNameEquals(
+                game.getGameDate(),
+                game.getVisitingTeamName(),
+                game.getHomeTeamName()
+        );
         if (!CollectionUtils.isEmpty(duplicateHomeAndVisitTeams)) {
+            //remove the current game info when update
             duplicateHomeAndVisitTeams.removeIf(g -> game.getId().equals(g.getId()));
         }
-        return !CollectionUtils.isEmpty(duplicateHomeAndVisitTeams);
+        return !CollectionUtils.isEmpty(duplicateHomeAndVisitTeams) || !CollectionUtils.isEmpty(duplicateHomeAndVisitTeamsReversed);
     }
 
 }

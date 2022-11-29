@@ -11,5 +11,6 @@ import java.util.List;
  * @author T.W 11/4/22
  */
 public interface LeagueRepository extends MongoRepository<League, String> {
-    List<League> findLeaguesByNameContains(String name);
+    List<League> findLeaguesByName(String name);
+    List<League> findByCommissionerSsn(String ssn);
 }

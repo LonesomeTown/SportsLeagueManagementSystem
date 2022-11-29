@@ -1,8 +1,6 @@
 package com.smu.service.impl;
 
-import cn.hutool.core.lang.Dict;
 import com.smu.dto.*;
-import com.smu.repository.GameRepository;
 import com.smu.repository.LeagueRepository;
 import com.smu.repository.TeamRepository;
 import com.smu.service.GameService;
@@ -10,12 +8,12 @@ import com.smu.service.LeagueService;
 import com.smu.service.SeasonService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * LeagueServiceImpl
@@ -46,13 +44,18 @@ public class LeagueServiceImpl implements LeagueService {
         if (StringUtils.isEmpty(leagueName)) {
             return leagueRepository.findAll();
         } else {
-            return leagueRepository.findLeaguesByNameContains(leagueName);
+            return leagueRepository.findLeaguesByName(leagueName);
         }
     }
 
     @Override
-    public void saveLeague(League league) {
+    public String saveLeague(League league) {
+        List<League> byCommissionerSsn = leagueRepository.findByCommissionerSsn(league.getCommissionerSsn());
+        if (!CollectionUtils.isEmpty(byCommissionerSsn) && !league.getCommissionerName().equals(byCommissionerSsn.get(0).getCommissionerName())) {
+            return "[Failed] SSN should be unique for each person!";
+        }
         leagueRepository.save(league);
+        return "";
     }
 
     @Override

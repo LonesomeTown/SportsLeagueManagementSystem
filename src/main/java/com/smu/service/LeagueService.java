@@ -27,7 +27,7 @@ public interface LeagueService {
     /**
      * @param league league
      */
-    void saveLeague(League league);
+    String saveLeague(League league);
 
     /**
      * @param league league

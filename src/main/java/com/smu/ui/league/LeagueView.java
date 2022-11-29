@@ -6,6 +6,7 @@ import com.smu.service.LeagueService;
 import com.smu.service.SeasonService;
 import com.smu.service.TeamService;
 import com.smu.ui.MainLayout;
+import com.smu.ui.NotificationError;
 import com.smu.ui.game.GameRecordsDialog;
 import com.smu.ui.game.GamesDialog;
 import com.vaadin.flow.component.Component;
@@ -19,6 +20,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
@@ -68,7 +70,9 @@ public class LeagueView extends VerticalLayout {
 
         upperGrid.asSingleSelect().addValueChangeListener(event -> {
                     League league = new League();
-                    BeanUtils.copyProperties(event.getValue(), league);
+                    if (null != event.getValue()) {
+                        BeanUtils.copyProperties(event.getValue(), league);
+                    }
                     editLeague(league);
                 }
         );
@@ -179,7 +183,11 @@ public class LeagueView extends VerticalLayout {
     }
 
     private void saveLeague(LeagueForm.SaveEvent event) {
-        leagueService.saveLeague(event.getLeague());
+        String msg = leagueService.saveLeague(event.getLeague());
+        if (StringUtils.isNotBlank(msg)) {
+            new NotificationError(msg);
+            return;
+        }
         Long teamsNum = teamService.countTeamsByLeague(event.getLeague().getName());
         if (null == teamsNum || teamsNum <= 0) {
             //open initialize team and season dialog
@@ -207,6 +215,7 @@ public class LeagueView extends VerticalLayout {
             team.setLeagueName(form.league.getName());
             teamService.saveTeam(team);
             Season season = new Season();
+            season.setLeagueName(initializeVo.getName());
             season.setStartDate(initializeVo.getStartDate());
             season.setEndDate(initializeVo.getEndDate());
             season.setGamesNum(initializeVo.getGamesNum());
