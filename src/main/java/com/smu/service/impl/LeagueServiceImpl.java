@@ -94,7 +94,8 @@ public class LeagueServiceImpl implements LeagueService {
             List<String> allTeams = homeTeam.stream().distinct().collect(Collectors.toList());
             List<TeamGameRecordVo> recordVos = new ArrayList<>();
             for (String team : allTeams) {
-                TeamGameRecordVo gameRecordsByTeam = gameService.findGameRecordsByTeamInSeason(team, season.getId(), gamesBySeason);
+                List<Game> gamesBySeasonAndTeam = gameService.findGamesBySeasonAndTeam(season.getId(), team);
+                TeamGameRecordVo gameRecordsByTeam = gameService.findGameRecordsByTeamInSeason(team, season.getId(), gamesBySeasonAndTeam);
                 if (null != gameRecordsByTeam) {
                     recordVos.add(gameRecordsByTeam);
                 }

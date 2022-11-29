@@ -218,8 +218,9 @@ public class SeasonView extends VerticalLayout {
             }
             allTeamsName = allTeamsName.stream().distinct().collect(Collectors.toList());
             for (String teamName : allTeamsName) {
+                List<Game> gamesBySeasonAndTeam = gameService.findGamesBySeasonAndTeam(seasonId, teamName);
                 TeamStandingVo teamStandingVo = new TeamStandingVo();
-                TeamGameRecordVo gameRecordsByTeamInSeason = gameService.findGameRecordsByTeamInSeason(teamName, seasonId, gamesBySeason);
+                TeamGameRecordVo gameRecordsByTeamInSeason = gameService.findGameRecordsByTeamInSeason(teamName, seasonId, gamesBySeasonAndTeam);
                 if (null == gameRecordsByTeamInSeason) {
                     continue;
                 }
@@ -227,6 +228,7 @@ public class SeasonView extends VerticalLayout {
                 teamStandingVo.setPoints(gameRecordsByTeamInSeason.getSumTotalPoints());
                 teamStandingVos.add(teamStandingVo);
             }
+            teamStandingVos.sort(Comparator.comparing(TeamStandingVo::getPoints).reversed());
             for (int i = 0; i < teamStandingVos.size(); i++) {
                 TeamStandingVo teamStandingVo = teamStandingVos.get(i);
                 if (i == 0) {
