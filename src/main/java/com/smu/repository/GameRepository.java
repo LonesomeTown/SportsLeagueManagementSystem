@@ -57,4 +57,8 @@ public interface GameRepository extends MongoRepository<Game, String> {
     List<Game> findGamesByHomeTeamNameAndSeasonIdOrVisitingTeamNameAndSeasonId(String homeTeamName, ObjectId seasonId1, String visitingName, ObjectId seasonId2);
 
     List<Game> findGamesByGameDateBefore(LocalDate date);
+
+    void removeAllBySeasonId(ObjectId seasonId);
+
+    void removeAllByHomeTeamNameOrVisitingTeamName(String homeTeam, String visitingTeam);
 }

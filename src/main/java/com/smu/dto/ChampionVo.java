@@ -10,6 +10,7 @@ import org.bson.types.ObjectId;
  */
 @Data
 public class ChampionVo {
+    private Integer order;
     private ObjectId seasonId;
     private String teamName;
     private String seasonDuration;

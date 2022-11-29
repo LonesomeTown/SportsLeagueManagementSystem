@@ -215,7 +215,7 @@ public class LeagueView extends VerticalLayout {
             team.setLeagueName(form.league.getName());
             teamService.saveTeam(team);
             Season season = new Season();
-            season.setLeagueName(initializeVo.getName());
+            season.setLeagueName(form.league.getName());
             season.setStartDate(initializeVo.getStartDate());
             season.setEndDate(initializeVo.getEndDate());
             season.setGamesNum(initializeVo.getGamesNum());

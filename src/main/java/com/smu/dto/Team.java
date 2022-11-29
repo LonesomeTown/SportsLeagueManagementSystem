@@ -19,7 +19,6 @@ public class Team implements Serializable {
     private String name;
     @NotEmpty
     private String city;
-    @NotEmpty
     private String field;
     @NotEmpty
     private String leagueName;

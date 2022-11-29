@@ -17,6 +17,8 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
 
+import java.time.LocalDate;
+
 /**
  * InitializeDialog
  *
@@ -63,6 +65,7 @@ public class InitializeDialog extends Dialog {
         city.setRequired(true);
         field.setRequired(true);
         startDate.setRequired(true);
+        startDate.setMin(LocalDate.now());
         endDate.setRequired(true);
         startDate.addValueChangeListener(e -> endDate.setMin(e.getValue()));
         endDate.addValueChangeListener(e -> startDate.setMax(e.getValue()));

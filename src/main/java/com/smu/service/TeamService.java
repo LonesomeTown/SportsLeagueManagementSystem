@@ -10,6 +10,8 @@ import java.util.List;
  * @author T.W 11/6/22
  */
 public interface TeamService {
+
+    Team findByTeamName(String teamName);
     /**
      * @param teamName teamName
      * @return {@link List}<{@link Team}>

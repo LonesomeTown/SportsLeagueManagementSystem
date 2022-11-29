@@ -47,8 +47,6 @@ public class TeamForm extends FormLayout {
         name.setErrorMessage("This field is required");
         city.setRequiredIndicatorVisible(true);
         city.setErrorMessage("This field is required");
-        field.setRequiredIndicatorVisible(true);
-        field.setErrorMessage("This field is required");
         leagueName.setRequiredIndicatorVisible(true);
         leagueName.setErrorMessage("This field is required");
         leagueName.setItems(leagues);

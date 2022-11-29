@@ -22,6 +22,7 @@ public interface SeasonRepository extends MongoRepository<Season, ObjectId> {
 
     /**
      * find season by its id number
+     *
      * @param id
      * @return {@link Season}
      */
@@ -45,6 +46,7 @@ public interface SeasonRepository extends MongoRepository<Season, ObjectId> {
 
     /**
      * find the season whose start date is prior to the date input
+     *
      * @param startDate
      * @return {@link Season}
      */
@@ -53,7 +55,8 @@ public interface SeasonRepository extends MongoRepository<Season, ObjectId> {
 
     List<Season> findSeasonByLeagueName(String leagueName);
 
-    Season findByStartDateBeforeAndEndDateAfterAndLeagueName(LocalDate startDate,LocalDate endDate, String leagueName);
+    @Query(value = "{'startDate':{ $lte: ?0}, 'endDate':{$gte: ?1},'leagueName':?2}")
+    Season findByStartDateBeforeAndEndDateAfterAndLeagueName(LocalDate startDate, LocalDate endDate, String leagueName);
 
     List<Season> findSeasonByStartDateBefore(LocalDate date);
 

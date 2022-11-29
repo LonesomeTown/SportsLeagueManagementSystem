@@ -1,6 +1,7 @@
 package com.smu.service.impl;
 
 import com.smu.dto.Season;
+import com.smu.repository.GameRepository;
 import com.smu.repository.SeasonRepository;
 import com.smu.service.SeasonService;
 import org.apache.commons.lang3.StringUtils;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * SeasonServiceImpl
@@ -21,9 +23,11 @@ import java.util.Optional;
 @Service
 public class SeasonServiceImpl implements SeasonService {
     private final SeasonRepository seasonRepository;
+    private final GameRepository gameRepository;
 
-    public SeasonServiceImpl(SeasonRepository seasonRepository) {
+    public SeasonServiceImpl(SeasonRepository seasonRepository, GameRepository gameRepository) {
         this.seasonRepository = seasonRepository;
+        this.gameRepository = gameRepository;
     }
 
     @Override
@@ -62,13 +66,7 @@ public class SeasonServiceImpl implements SeasonService {
         List<Season> endDateBetween = seasonRepository.findSeasonByEndDateBetweenAndLeagueName(startDate, endDate, season.getLeagueName());
         // oldStart -- newStart -- newEnd -- oldEnd
         List<Season> startDateBeforeAndEndDateAfter = seasonRepository.findSeasonByStartDateBeforeAndEndDateAfterAndLeagueName(startDate, endDate, season.getLeagueName());
-        // Season ID identifier
-        ObjectId seasonId = season.getId();
-        Season duplicateId = seasonRepository.findSeasonByIdEquals(seasonId);
-        // Conditions
-        if (duplicateId != null) {
-            seasonRepository.save(season);
-        } else if (!CollectionUtils.isEmpty(startDateBetween) || !CollectionUtils.isEmpty(endDateBetween)) {
+        if (!CollectionUtils.isEmpty(startDateBetween) || !CollectionUtils.isEmpty(endDateBetween)) {
             return "[Failed] Start date or end date has already exited in other seasons!";
         } else if (!CollectionUtils.isEmpty(startDateBeforeAndEndDateAfter)) {
             return "[Failed] Season date schedule overlaps another existing season!";
@@ -80,7 +78,17 @@ public class SeasonServiceImpl implements SeasonService {
 
     @Override
     public void deleteSeason(Season season) {
+        gameRepository.removeAllBySeasonId(season.getId());
         seasonRepository.delete(season);
+    }
+
+    @Override
+    public void deleteAll(List<Season> seasons) {
+        seasonRepository.deleteAll(seasons);
+        List<ObjectId> seasonIds = seasons.stream().map(Season::getId).collect(Collectors.toList());
+        for (ObjectId seasonId : seasonIds) {
+            gameRepository.removeAllBySeasonId(seasonId);
+        }
     }
 
     @Override

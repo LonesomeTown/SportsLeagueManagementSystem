@@ -2,6 +2,7 @@ package com.smu.service.impl;
 
 import com.smu.dto.Season;
 import com.smu.dto.Team;
+import com.smu.repository.GameRepository;
 import com.smu.repository.SeasonRepository;
 import com.smu.repository.TeamRepository;
 import com.smu.service.TeamService;
@@ -25,10 +26,18 @@ import java.util.stream.Collectors;
 public class TeamServiceImpl implements TeamService {
     private final TeamRepository teamRepository;
     private final SeasonRepository seasonRepository;
+    private final GameRepository gameRepository;
 
-    public TeamServiceImpl(TeamRepository teamRepository, SeasonRepository seasonRepository) {
+    public TeamServiceImpl(TeamRepository teamRepository, SeasonRepository seasonRepository, GameRepository gameRepository) {
         this.teamRepository = teamRepository;
         this.seasonRepository = seasonRepository;
+        this.gameRepository = gameRepository;
+    }
+
+    @Override
+    public Team findByTeamName(String teamName) {
+        Optional<Team> byId = teamRepository.findById(teamName);
+        return byId.orElse(null);
     }
 
     @Override
@@ -53,6 +62,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public void deleteTeam(Team team) {
         teamRepository.delete(team);
+        gameRepository.removeAllByHomeTeamNameOrVisitingTeamName(team.getName(), team.getName());
     }
 
     @Override

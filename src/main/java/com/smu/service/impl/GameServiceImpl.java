@@ -124,9 +124,9 @@ public class GameServiceImpl implements GameService {
             String field = teamService.findFieldByTeamName(allTeamsName.get(randomHomeTeamNameIndex));
 
             //localDate date
-            long seasonLength = season.getEndDate().toEpochDay() - season.getStartDate().toEpochDay();
-            long randomSpan = random.nextInt(seasonLength == 0 ? 1 : (int) seasonLength);
-            LocalDate gameDate = season.getStartDate().plusDays(randomSpan);
+//            long seasonLength = season.getEndDate().toEpochDay() - season.getStartDate().toEpochDay();
+//            long randomSpan = random.nextInt(seasonLength == 0 ? 1 : (int) seasonLength);
+            LocalDate gameDate = season.getStartDate().plusDays(i);
             game.setHomeTeamName(allTeamsName.get(randomHomeTeamNameIndex));
             game.setVisitingTeamName(allTeamsName.get(randomVisitingTeamNameIndex));
             game.setLocation(field);
@@ -170,7 +170,7 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public TeamGameRecordVo findGameRecordsByTeamInSeason(String teamName, ObjectId seasonId, List<Game> gamesInSeason) {
-        gamesInSeason.removeIf(game -> null == game.getHomeScore() || null == game.getVisitingScore());
+        gamesInSeason.removeIf(game -> null == game.getHomeScore() || null == game.getVisitingScore() || null == game.getGameResult());
         if (CollectionUtils.isEmpty(gamesInSeason)) {
             return null;
         }
@@ -206,9 +206,9 @@ public class GameServiceImpl implements GameService {
         recordVo.setNumsLoss(lossGamesNum);
         //calculate the total points of this season by the scoring criteria
         ScoringCriteria scoringCriteria = scoringCriteriaService.findBySeasonId(seasonId);
-        double wonPoints = null == scoringCriteria.getWonPoints() ? GameResultEnum.WON.getPoints() : scoringCriteria.getWonPoints();
-        double drawnPoints = null == scoringCriteria.getDrawnPoints() ? GameResultEnum.DRAWN.getPoints() : scoringCriteria.getDrawnPoints();
-        double lossPoints = null == scoringCriteria.getDrawnPoints() ? GameResultEnum.LOST.getPoints() : scoringCriteria.getLostPoints();
+        double wonPoints = null == scoringCriteria ? GameResultEnum.WON.getPoints() : scoringCriteria.getWonPoints();
+        double drawnPoints = null == scoringCriteria ? GameResultEnum.DRAWN.getPoints() : scoringCriteria.getDrawnPoints();
+        double lossPoints = null == scoringCriteria ? GameResultEnum.LOST.getPoints() : scoringCriteria.getLostPoints();
         recordVo.setSumTotalPoints(wonPoints * wonGamesNum + drawnPoints * drawnGamesNum + lossPoints * lossGamesNum);
         return recordVo;
     }
@@ -216,56 +216,50 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public String updateCurrentDate(LocalDate currentDate) {
-        List<Season> all = seasonRepository.findAll();
-        all.sort(Comparator.comparing(Season::getEndDate).reversed());
-        Season latestSeason = all.get(0);
-        LocalDate latestDay = latestSeason.getEndDate();
+        List<String> leagueNames = leagueRepository.findAll().stream().map(League::getName).collect(Collectors.toList());
+        for (String leagueName : leagueNames) {
+            List<Season> all = seasonRepository.findSeasonByLeagueName(leagueName);
+            all.sort(Comparator.comparing(Season::getEndDate).reversed());
+            Season latestSeason = all.get(0);
+            LocalDate latestDay = latestSeason.getEndDate();
 
-        if (currentDate.isAfter(latestDay)) {
-            //generate all the games result before current date
-            List<Game> gamesByGameDateBefore = gameRepository.findGamesByGameDateBefore(currentDate);
-            for (Game game : gamesByGameDateBefore) {
-                if (null == game.getHomeScore() || null == game.getVisitingScore()) {
-                    game.setHomeScore((double) random.nextInt(50));
-                    game.setVisitingScore((double) random.nextInt(50));
-                    gameRepository.save(game);
+            if (currentDate.isAfter(latestDay)) {
+
+                // Generate a season between today and the date set
+                Season season = new Season();
+                int gap = (int) latestDay.until(currentDate, ChronoUnit.DAYS);
+                season.setGamesNum(gap);
+                season.setStartDate(latestDay.plusDays(1));
+                season.setLeagueName(leagueName);
+                season.setEndDate(currentDate);
+                seasonService.saveSeason(season);
+
+                // Automatically generate games and load it to the season
+                autoGenerateGamesBySeason(season.getId());
+                for (Season season1 : all) {
+                    autoGenerateGamesBySeason(season1.getId());
+                }
+
+
+                //generate all the games result before current date
+                List<Game> gamesByGameDateBefore = gameRepository.findGamesByGameDateBefore(currentDate);
+                for (Game game : gamesByGameDateBefore) {
+                    if (null == game.getHomeScore() || null == game.getVisitingScore()) {
+                        game.setHomeScore((double) random.nextInt(50));
+                        game.setVisitingScore((double) random.nextInt(50));
+                        if (game.getHomeScore() > game.getVisitingScore()) {
+                            game.setGameResult(game.getHomeTeamName());
+                        } else if (game.getHomeScore() < game.getVisitingScore()) {
+                            game.setGameResult(game.getVisitingTeamName());
+                        } else {
+                            game.setGameResult(GameResultEnum.DRAWN.name());
+                        }
+                        gameRepository.save(game);
+                    }
                 }
             }
-
-            // Generate a season between today and the date set
-            Season season = new Season();
-            int gap = (int) latestDay.until(currentDate, ChronoUnit.DAYS);
-            season.setGamesNum(gap);
-            season.setStartDate(latestDay.plusDays(1));
-            List<String> leagueNames = leagueRepository.findAll().stream().map(League::getName).collect(Collectors.toList());
-            season.setLeagueName(leagueNames.get(0));
-            season.setEndDate(currentDate);
-            Integer num = season.getGamesNum();
-
-            // Save the season and check to assure tha the season schedule has no conflict with other seasons
-            if (!"".equals(seasonService.saveSeason(season))) {
-                updateCurrentDate(currentDate);
-            }
-
-            // Automatically generate games and load it to the season
-            while (num > 0) {
-                String autoGen = autoGenerateGamesBySeason(season.getId());
-                if ("".equals(autoGen)) {
-                    num--;
-                }
-            }
-
-            return "Automatically generate games and season!";
         }
-        // If the set date is in the past
-        if (currentDate.isBefore(latestDay)) {
-            // Here would generate a list that contains all the seasons before the set date
-            List<Game> gameDateBefore = gameRepository.findGamesByGameDateBefore(currentDate);
-            // Return a season whose start date were before the set date
-            List<Season> seasonDateBefore = seasonRepository.findSeasonByStartDateBefore(currentDate);
-            return "";
-        }
-        return "";
+        return "Automatically generate games and season!";
     }
 
 
@@ -280,7 +274,7 @@ public class GameServiceImpl implements GameService {
                 game.getVisitingTeamName(),
                 game.getHomeTeamName()
         );
-        if (!CollectionUtils.isEmpty(duplicateHomeAndVisitTeams)) {
+        if (!CollectionUtils.isEmpty(duplicateHomeAndVisitTeams) && null != game.getId()) {
             //remove the current game info when update
             duplicateHomeAndVisitTeams.removeIf(g -> game.getId().equals(g.getId()));
         }

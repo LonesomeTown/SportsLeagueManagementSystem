@@ -52,7 +52,7 @@ public class TeamView extends VerticalLayout {
         upperGrid.setColumns("name");
         upperGrid.addColumn(Team::getCity).setHeader("City of Team");
         upperGrid.addColumn(Team::getField).setHeader("Field of Team");
-        upperGrid.addColumn(Team::getLeagueName).setHeader("League Name");
+        upperGrid.addColumn(Team::getLeagueName).setHeader("League Name").setSortable(true);
         upperGrid.addColumn(Team::getRating).setHeader("Rating").setSortable(true);
         upperGrid.getColumns().forEach(col -> col.setAutoWidth(true));
         this.updateUpperGridList();

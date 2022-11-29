@@ -357,6 +357,7 @@ public class SeasonView extends VerticalLayout {
             String msg = gameService.updateCurrentDate(datePicker.getValue());
             new NotificationSuccess(msg);
             updateList();
+
         }
     }
 }

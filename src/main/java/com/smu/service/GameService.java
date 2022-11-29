@@ -55,6 +55,4 @@ public interface GameService {
     TeamGameRecordVo findGameRecordsByTeamInSeason(String teamName, ObjectId seasonId, List<Game> gamesInSeason);
 
     String updateCurrentDate(LocalDate date);
-
-
 }

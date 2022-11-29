@@ -38,6 +38,8 @@ public interface SeasonService {
      */
     void deleteSeason(Season season);
 
+    void deleteAll(List<Season> seasons);
+
     /**
      * @param id id
      * @return {@link Season}

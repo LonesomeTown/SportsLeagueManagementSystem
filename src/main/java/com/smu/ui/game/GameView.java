@@ -51,7 +51,7 @@ public class GameView extends VerticalLayout {
         grid.addColumn(GameVo::getLeagueName).setHeader("League Name");
         grid.addColumn(GameVo::getGameDate).setHeader("Game Date");
         grid.addColumn(GameVo::getHomeScore).setHeader("Home Team Scores");
-        grid.addColumn(GameVo::getHomeScore).setHeader("Visiting Team Scores");
+        grid.addColumn(GameVo::getVisitingScore).setHeader("Visiting Team Scores");
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
         this.updateList();
         HorizontalLayout layout = new HorizontalLayout(grid);

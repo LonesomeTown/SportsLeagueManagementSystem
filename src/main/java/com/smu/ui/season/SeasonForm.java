@@ -20,6 +20,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -49,6 +50,7 @@ public class SeasonForm extends FormLayout {
         leagueName.setItems(leaguesName);
         startDate.setRequiredIndicatorVisible(true);
         startDate.setErrorMessage("This field is required");
+        startDate.setMin(LocalDate.now());
         endDate.setRequiredIndicatorVisible(true);
         endDate.setErrorMessage("This field is required");
         startDate.addValueChangeListener(e -> endDate.setMin(e.getValue()));
