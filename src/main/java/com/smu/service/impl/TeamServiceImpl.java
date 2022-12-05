@@ -50,12 +50,13 @@ public class TeamServiceImpl implements TeamService {
     }
 
     @Override
-    public void saveTeam(Team team) {
+    public String saveTeam(Team team) {
         Optional<Team> oldTeam = teamRepository.findById(team.getName());
         if (oldTeam.isPresent() && !oldTeam.get().getLeagueName().equals(team.getLeagueName())) {
-            this.moveTeam(team, team.getLeagueName());
+            return this.moveTeam(team, oldTeam.get().getLeagueName());
         } else {
             teamRepository.save(team);
+            return "";
         }
     }
 
@@ -93,13 +94,12 @@ public class TeamServiceImpl implements TeamService {
     public String moveTeam(Team team, String leagueName) {
         // Get current date
         LocalDate current = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        current = LocalDate.parse(current.format(formatter));
         // Compare the date with season schedule
         // Violation case:
         //    seasonStart -- current -- seasonEnd
-        List<Season> seasonsByStartDateBeforeAndEndDateAfter = seasonRepository.findSeasonByStartDateBeforeAndEndDateAfterAndLeagueName(current, current, leagueName);
-        if (!seasonsByStartDateBeforeAndEndDateAfter.isEmpty()) {
+        List<Season> seasonsBySourceLeague = seasonRepository.findSeasonByStartDateBeforeAndEndDateAfterAndLeagueName(current, current, leagueName);
+        List<Season> seasonsByDestLeague = seasonRepository.findSeasonByStartDateBeforeAndEndDateAfterAndLeagueName(current, current, team.getLeagueName());
+        if (seasonsBySourceLeague.isEmpty() && seasonsByDestLeague.isEmpty()) {
             team.setLeagueName(leagueName);
             teamRepository.save(team);
             return "";
@@ -111,6 +111,7 @@ public class TeamServiceImpl implements TeamService {
     @Override
     public List<String> findTeamNamesByLeagueName(String leagueName) {
         return this.teamRepository.findTeamsByLeagueName(leagueName).stream().map(Team::getName).collect(Collectors.toList());
+
     }
 
 
