@@ -21,7 +21,7 @@ public interface TeamService {
     /**
      * @param team team
      */
-    void saveTeam(Team team);
+    String saveTeam(Team team);
 
     /**
      * @param team team
@@ -56,4 +56,5 @@ public interface TeamService {
      * @return {@link List}<{@link String}>
      */
     List<String> findTeamNamesByLeagueName(String leagueName);
+
 }

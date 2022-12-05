@@ -7,6 +7,8 @@ import com.smu.service.GameService;
 import com.smu.service.LeagueService;
 import com.smu.service.TeamService;
 import com.smu.ui.MainLayout;
+import com.smu.ui.NotificationError;
+import com.smu.ui.NotificationSuccess;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -17,6 +19,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -147,9 +150,13 @@ public class TeamView extends VerticalLayout {
     }
 
     private void saveTeam(TeamForm.SaveEvent event) {
-        teamService.saveTeam(event.getTeam());
-        closeEditor();
-        updateUpperGridList();
+        String msg = teamService.saveTeam(event.getTeam());
+        if (StringUtils.isNotBlank(msg)) {
+            new NotificationError(msg);
+        } else {
+            closeEditor();
+            updateUpperGridList();
+        }
     }
 
     private void deleteTeam(TeamForm.DeleteEvent event) {
