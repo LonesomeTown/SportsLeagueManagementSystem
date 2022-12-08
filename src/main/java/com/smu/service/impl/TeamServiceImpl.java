@@ -100,7 +100,6 @@ public class TeamServiceImpl implements TeamService {
         List<Season> seasonsBySourceLeague = seasonRepository.findSeasonByStartDateBeforeAndEndDateAfterAndLeagueName(current, current, leagueName);
         List<Season> seasonsByDestLeague = seasonRepository.findSeasonByStartDateBeforeAndEndDateAfterAndLeagueName(current, current, team.getLeagueName());
         if (seasonsBySourceLeague.isEmpty() && seasonsByDestLeague.isEmpty()) {
-            team.setLeagueName(leagueName);
             teamRepository.save(team);
             return "";
         } else {

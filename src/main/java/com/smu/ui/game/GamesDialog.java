@@ -32,6 +32,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * GamesDialog
@@ -237,6 +238,7 @@ public class GamesDialog extends Dialog {
             locations.add(fieldByTeamName);
         }
         if (!CollectionUtils.isEmpty(locations)) {
+            locations = locations.stream().distinct().collect(Collectors.toList());
             location.setItems(locations);
         }
     }
